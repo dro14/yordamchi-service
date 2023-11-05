@@ -11,7 +11,7 @@ async def search(request: Request):
     query = data["query"]
     if query:
         elements = google_search(query)
-        results = clean_data(elements)
+        results = clean_data(elements, with_links=False)
         return {"results": results}
     else:
         return {"error": "No query provided"}

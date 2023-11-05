@@ -20,4 +20,4 @@ RUN pip install --upgrade pip && \
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app"]
+CMD ["uvicorn", "main:app", "--log-level", "warning"]

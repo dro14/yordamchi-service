@@ -23,7 +23,7 @@ driver = Firefox(options=options)
 driver.implicitly_wait(1)
 
 
-def clean_data(elements):
+def clean_data(elements, with_links=True):
     results = []
     for element in elements:
         redundant_elements = ("People also ask", "Related searches", "Related search", "Images", "Videos")
@@ -42,13 +42,14 @@ def clean_data(elements):
                     break
             i += 1
 
-        try:
-            link = element.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
-        except NoSuchElementException:
-            link = None
+        if with_links:
+            try:
+                link = element.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
+            except NoSuchElementException:
+                link = None
 
-        if link:
-            lines.append(link)
+            if link:
+                lines.append(link)
 
         results.append("\n".join(lines))
 
