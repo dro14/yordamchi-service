@@ -34,7 +34,7 @@ jobs:
           registryUsername: ${{ secrets.GOOGLE_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.GOOGLE_REGISTRY_PASSWORD }}
           containerAppName: google
-          resourceGroup: yordamchi
+          resourceGroup: Yordamchi
           imageToBuild: dro14/google:${{ github.sha }}
           
 
