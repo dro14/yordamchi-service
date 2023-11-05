@@ -1,0 +1,42 @@
+name: Trigger auto deployment for google
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/google-AutoDeployTrigger-73995d63-38ef-4396-99f4-3f178ba0d731.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.GOOGLE_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.GOOGLE_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.GOOGLE_REGISTRY_PASSWORD }}
+          containerAppName: google
+          resourceGroup: yordamchi
+          imageToBuild: dro14/google:${{ github.sha }}
+          
+
+     
+
