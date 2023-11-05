@@ -6,7 +6,7 @@ app = FastAPI()
 
 
 @app.post("/search")
-async def search_endpoint(request: Request):
+async def search(request: Request):
     data = await request.json()
     query = data["query"]
     if query:
