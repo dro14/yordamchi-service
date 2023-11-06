@@ -23,6 +23,19 @@ driver = Firefox(options=options)
 driver.implicitly_wait(1)
 
 
+def make_url(query):
+    return "https://www.google.com/search?hl=en&num=10&q=" + quote(query)
+
+
+def google_search(url):
+    driver.get(url)
+    try:
+        driver.find_element(By.ID, "L2AGLb").click()
+    except NoSuchElementException:
+        pass
+    return driver.find_elements(By.CLASS_NAME, "MjjYud")
+
+
 def clean_data(elements, with_links=True):
     results = []
     for element in elements:
@@ -54,13 +67,3 @@ def clean_data(elements, with_links=True):
         results.append("\n".join(lines))
 
     return "\n\n".join(results)
-
-
-def google_search(query):
-    url = "https://www.google.com/search?&hl=en&num=10&q=" + quote(query)
-    driver.get(url)
-    try:
-        driver.find_element(By.ID, "L2AGLb").click()
-    except NoSuchElementException:
-        pass
-    return driver.find_elements(By.CLASS_NAME, "MjjYud")

@@ -1,4 +1,4 @@
-from functions import google_search, clean_data
+from functions import make_url, google_search, clean_data
 from fastapi import FastAPI, Request
 
 
@@ -10,7 +10,8 @@ async def search(request: Request):
     data = await request.json()
     query = data["query"]
     if query:
-        elements = google_search(query)
+        url = make_url(query)
+        elements = google_search(url)
         results = clean_data(elements, with_links=False)
         return {"results": results}
     else:
