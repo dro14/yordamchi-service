@@ -2,20 +2,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.common.by import By
 from urllib.parse import quote
-from re import match
-
-REDUNDANT_LINES = (
-    r"http",
-    r"·",
-    r"Translate this page",
-    r"•",
-    r"Feedback",
-    r"Missing",
-    r"Rating",
-    r"\d+ answers",
-    r"Top answer:",
-    r"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s([1-9]|[12][0-9]|3[01]),\s\d{4}$",
-)
 
 options = FirefoxOptions()
 options.add_argument("--headless")
@@ -23,8 +9,8 @@ driver = Firefox(options=options)
 driver.implicitly_wait(1)
 
 
-def make_url(query):
-    return "https://www.google.com/search?hl=en&gl=uz&num=10&q=" + quote(query)
+def make_url(lang, query):
+    return f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q=" + quote(query)
 
 
 def google_search(url):
@@ -51,8 +37,7 @@ def google_search(url):
 def clean_data(elements, with_links=True):
     results = []
     for element in elements:
-        redundant_elements = ("People also ask", "Related searches", "Related search", "Images", "Videos")
-        if not element.text or element.text.startswith(redundant_elements):
+        if not element.text.strip():
             continue
 
         lines = element.text.splitlines()
@@ -60,11 +45,9 @@ def clean_data(elements, with_links=True):
         i = 0
         while i < len(lines):
             lines[i] = lines[i].strip()
-            for redundant_line in REDUNDANT_LINES:
-                if match(redundant_line, lines[i]):
-                    lines.pop(i)
-                    i -= 1
-                    break
+            if lines[i].startswith(("http", "·", "•")):
+                lines.pop(i)
+                i -= 1
             i += 1
 
         if with_links:

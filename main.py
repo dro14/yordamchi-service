@@ -9,8 +9,9 @@ app = FastAPI()
 async def search(request: Request):
     data = await request.json()
     query = data["query"]
+    lang = data["lang"]
     if query:
-        url = make_url(query)
+        url = make_url(lang, query)
         elements = google_search(url)
         results = clean_data(elements, with_links=False)
         return {"results": results}
