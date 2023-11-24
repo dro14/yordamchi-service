@@ -24,16 +24,28 @@ driver.implicitly_wait(1)
 
 
 def make_url(query):
-    return "https://www.google.com/search?hl=en&num=10&q=" + quote(query)
+    return "https://www.google.com/search?hl=en&gl=uz&num=10&q=" + quote(query)
 
 
 def google_search(url):
     driver.get(url)
+
     try:
         driver.find_element(By.ID, "L2AGLb").click()
     except NoSuchElementException:
         pass
-    return driver.find_elements(By.CLASS_NAME, "MjjYud")
+
+    elements = []
+    try:
+        elements.extend(driver.find_elements(By.CLASS_NAME, "Kot7x"))
+    except NoSuchElementException:
+        pass
+    try:
+        elements.extend(driver.find_elements(By.CLASS_NAME, "MjjYud"))
+    except NoSuchElementException:
+        pass
+
+    return elements
 
 
 def clean_data(elements, with_links=True):
