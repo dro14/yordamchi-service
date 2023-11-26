@@ -1,8 +1,12 @@
 from functions import make_url, google_search, clean_data
 from fastapi import FastAPI, Request
 
-
 app = FastAPI()
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello, Yordamchi!"}
 
 
 @app.post("/search")
