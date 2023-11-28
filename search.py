@@ -35,7 +35,7 @@ def google_search(url):
 
 
 def clean_data(elements, with_links=True):
-    results = []
+    results = set()
     for element in elements:
         if not element.text.strip():
             continue
@@ -59,6 +59,6 @@ def clean_data(elements, with_links=True):
             if link:
                 lines.append(link)
 
-        results.append("\n".join(lines))
+        results.add("\n".join(lines))
 
-    return "\n\n".join(results)
+    return results
