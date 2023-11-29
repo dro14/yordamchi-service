@@ -3,17 +3,19 @@ from vectordb import client, retriever
 from fastapi import FastAPI, Request
 from loaders import load_document
 import pyrogram
+import uvicorn
 import os
 
 uuids = {}
 file_names = {}
-api = FastAPI()
-app = pyrogram.Client(
+app = FastAPI()
+bot = pyrogram.Client(
     "my_account",
     api_id=os.environ["API_ID"],
     api_hash=os.environ["API_HASH"],
     bot_token=os.environ["BOT_TOKEN"]
 )
+bot.start()
 
 
 def clear_user(user_id):
@@ -27,18 +29,18 @@ def clear_user(user_id):
         uuids.pop(user_id)
 
 
-@api.get("/")
+@app.get("/")
 async def root():
     return {"success": True, "message": "Hello, Yordamchi!"}
 
 
-@api.post("/load")
+@app.post("/load")
 async def load(request: Request):
     data = await request.json()
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
-    await app.download_media(file_id, file_name)
+    await bot.download_media(file_id, file_name)
 
     try:
         docs = load_document(file_name, user_id)
@@ -51,7 +53,7 @@ async def load(request: Request):
         return {"success": True}
 
 
-@api.post("/search")
+@app.post("/search")
 async def search(request: Request):
     data = await request.json()
     query = data["query"]
@@ -80,7 +82,7 @@ async def search(request: Request):
         return {"success": True, "results": "\n\n".join(results)}
 
 
-@api.post("/memory")
+@app.post("/memory")
 async def memory(request: Request):
     data = await request.json()
     user_id = data["user_id"]
@@ -92,9 +94,13 @@ async def memory(request: Request):
         return {"success": True, "file_name": file_name}
 
 
-@api.post("/clear")
+@app.post("/clear")
 async def clear(request: Request):
     data = await request.json()
     user_id = data["user_id"]
     clear_user(user_id)
     return {"success": True}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0")
