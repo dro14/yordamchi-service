@@ -31,7 +31,7 @@ def clear_user(user_id):
 
 @app.get("/")
 async def root():
-    return {"success": True, "message": "Hello, Yordamchi!"}
+    return {"success": True, "message": "Hello, World!"}
 
 
 @app.post("/load")
