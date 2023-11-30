@@ -22,7 +22,7 @@ def remove_newlines(s):
 def load_document(file_name, user_id):
     file_path = "downloads/" + file_name
     if file_path.endswith(".pdf"):
-        pages = PyPDFLoader(file_path).load()
+        pages = PyPDFLoader(file_path, extract_images=True).load()
     elif file_path.endswith((".doc", ".docx")):
         pages = Docx2txtLoader(file_path).load()
     elif file_path.endswith(".txt"):
