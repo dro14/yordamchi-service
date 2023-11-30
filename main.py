@@ -31,7 +31,7 @@ def clear_user(user_id):
 
 @app.get("/")
 async def root():
-    return {"success": True, "message": "Hello, World!"}
+    return {"message": "Hello, World!"}
 
 
 @app.post("/load")
@@ -45,7 +45,7 @@ async def load(request: Request):
     try:
         docs = load_document(file_name, user_id)
     except ValueError as e:
-        return {"success": False, "message": str(e)}
+        return {"success": False, "error": str(e)}
     else:
         clear_user(user_id)
         uuids[user_id] = retriever.add_documents(docs)
@@ -66,7 +66,7 @@ async def search(request: Request):
         url = make_url(lang, query)
         elements = google_search(url)
         results = clean_data(elements, with_links=False)
-        return {"success": True, "results": "\n\n".join(results)}
+        return {"results": "\n\n".join(results)}
     else:
         docs = retriever.get_relevant_documents(
             query,
@@ -79,7 +79,7 @@ async def search(request: Request):
         results = set()
         for doc in docs:
             results.add(doc.page_content)
-        return {"success": True, "results": "\n\n".join(results)}
+        return {"results": "\n\n".join(results)}
 
 
 @app.post("/memory")
@@ -89,9 +89,9 @@ async def memory(request: Request):
     try:
         file_name = file_names[user_id]
     except KeyError:
-        return {"success": False}
+        return {"file_name": ""}
     else:
-        return {"success": True, "file_name": file_name}
+        return {"file_name": file_name}
 
 
 @app.post("/clear")
