@@ -1,4 +1,5 @@
 from search import make_url, google_search, clean_data
+from contextlib import asynccontextmanager
 from vectordb import client, retriever
 from fastapi import FastAPI, Request
 from loaders import load_document
@@ -8,14 +9,6 @@ import os
 
 uuids = {}
 file_names = {}
-app = FastAPI()
-bot = pyrogram.Client(
-    "my_account",
-    api_id=os.environ["API_ID"],
-    api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["BOT_TOKEN"]
-)
-bot.start()
 
 
 def clear_user(user_id):
@@ -27,6 +20,24 @@ def clear_user(user_id):
         for uuid in uuids[user_id]:
             client.data_object.delete(uuid, class_name="LangChain")
         uuids.pop(user_id)
+
+
+bot = pyrogram.Client(
+    "my_account",
+    api_id=os.environ["API_ID"],
+    api_hash=os.environ["API_HASH"],
+    bot_token=os.environ["BOT_TOKEN"]
+)
+
+
+@asynccontextmanager
+async def lifespan(_):
+    await bot.start()
+    yield
+    await bot.stop()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -103,4 +114,4 @@ async def clear(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8080, log_level="debug")
+    uvicorn.run(app, host="0.0.0.0", log_level="warning")

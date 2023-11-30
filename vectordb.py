@@ -1,4 +1,4 @@
-from langchain.retrievers.weaviate_hybrid_search import WeaviateHybridSearchRetriever
+from langchain.retrievers import WeaviateHybridSearchRetriever
 from weaviate import EmbeddedOptions
 import weaviate
 import os
@@ -15,7 +15,7 @@ retriever = WeaviateHybridSearchRetriever(
     client=client,
     index_name="LangChain",
     text_key="text",
-    alpha=0.2,
+    alpha=0.5,
     k=3,
     attributes=[],
     create_schema_if_missing=True,
