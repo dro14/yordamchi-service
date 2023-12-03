@@ -28,7 +28,7 @@ def load_document(file_name, user_id):
     elif file_path.endswith(".txt"):
         pages = TextLoader(file_path).load()
     else:
-        raise ValueError(f"Unsupported file format: {file_name}")
+        raise ValueError(f"unsupported file format: {file_name}")
 
     file_contents = set()
     for page in pages:

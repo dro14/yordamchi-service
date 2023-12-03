@@ -11,7 +11,7 @@ uuids = {}
 file_names = {}
 
 
-def clear_user(user_id):
+def clear(user_id):
     try:
         uuids[user_id]
     except KeyError:
@@ -58,7 +58,7 @@ async def load(request: Request):
     except ValueError as e:
         return {"success": False, "error": str(e)}
     else:
-        clear_user(user_id)
+        clear(user_id)
         uuids[user_id] = retriever.add_documents(docs)
         file_names[user_id] = file_name
         return {"success": True}
@@ -105,11 +105,11 @@ async def memory(request: Request):
         return {"file_name": file_name}
 
 
-@app.post("/clear")
-async def clear(request: Request):
+@app.post("/delete")
+async def delete(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    clear_user(user_id)
+    clear(user_id)
     return {"success": True}
 
 
