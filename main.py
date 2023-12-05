@@ -100,7 +100,7 @@ async def memory(request: Request):
     try:
         file_name = file_names[user_id]
     except KeyError:
-        return {"file_name": ""}
+        return {"file_name": "Google"}
     else:
         return {"file_name": file_name}
 
