@@ -1,16 +1,16 @@
 from search import make_url, google_search, clean_data
+from contextlib import asynccontextmanager
 from vectordb import client, retriever
 from fastapi import FastAPI, Request
+from bots import yordamchi, google
 from loaders import load_document
-from bots import yordamchi
 import uvicorn
 
 uuids = {}
 file_names = {}
-app = FastAPI()
 
 
-def clear(user_id):
+async def clear(user_id):
     try:
         uuids[user_id]
     except KeyError:
@@ -19,6 +19,18 @@ def clear(user_id):
         for uuid in uuids[user_id]:
             client.data_object.delete(uuid, class_name="LangChain")
         uuids.pop(user_id)
+
+
+@asynccontextmanager
+async def lifespan(_):
+    await yordamchi.start()
+    await google.start()
+    yield
+    await yordamchi.stop()
+    await google.stop()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -39,7 +51,7 @@ async def load(request: Request):
     except ValueError as e:
         return {"success": False, "error": str(e)}
     else:
-        clear(user_id)
+        await clear(user_id)
         uuids[user_id] = retriever.add_documents(docs)
         file_names[user_id] = file_name
         return {"success": True}
@@ -55,9 +67,9 @@ async def search(request: Request):
     try:
         uuids[user_id]
     except KeyError:
-        url = make_url(lang, query)
-        elements = google_search(url)
-        results = clean_data(elements, with_links=False)
+        url = await make_url(lang, query)
+        elements = await google_search(url)
+        results = await clean_data(elements, with_links=False)
         return {"results": "\n\n".join(results)}
     else:
         docs = retriever.get_relevant_documents(
@@ -81,16 +93,16 @@ async def memory(request: Request):
     try:
         file_name = file_names[user_id]
     except KeyError:
-        return {"file_name": "Google"}
+        return {"source": "Google"}
     else:
-        return {"file_name": file_name}
+        return {"source": file_name}
 
 
 @app.post("/delete")
 async def delete(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    clear(user_id)
+    await clear(user_id)
     return {"success": True}
 
 

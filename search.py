@@ -9,11 +9,11 @@ driver = Firefox(options=options)
 driver.implicitly_wait(1)
 
 
-def make_url(lang, query):
+async def make_url(lang, query):
     return f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q=" + quote(query)
 
 
-def google_search(url):
+async def google_search(url):
     driver.get(url)
 
     try:
@@ -34,7 +34,7 @@ def google_search(url):
     return elements
 
 
-def clean_data(elements, with_links=True):
+async def clean_data(elements, with_links=True):
     results = set()
     for element in elements:
         if not element.text.strip():
