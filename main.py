@@ -6,8 +6,6 @@ from loaders import load_document
 from pyrogram import Client
 import subprocess
 import uvicorn
-import signal
-import sys
 import os
 
 uuids = {}
@@ -23,6 +21,7 @@ async def clear(user_id):
         for uuid in uuids[user_id]:
             client.data_object.delete(uuid, class_name="LangChain")
         uuids.pop(user_id)
+        file_names.pop(user_id)
 
 
 yordamchi = Client(
@@ -36,8 +35,10 @@ yordamchi = Client(
 @asynccontextmanager
 async def lifespan(_):
     await yordamchi.start()
+    process = subprocess.Popen(["python", "google.py"])
     yield
     await yordamchi.stop()
+    process.terminate()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -82,14 +83,12 @@ async def search(request: Request):
         results = await clean_data(elements, with_links=False)
         return {"results": "\n\n".join(results)}
     else:
-        docs = retriever.get_relevant_documents(
-            query,
-            where_filter={
-                "path": ["user_id"],
-                "operator": "Equal",
-                "valueNumber": user_id,
-            },
-        )
+        where_filter = {
+            "path": ["user_id"],
+            "operator": "Equal",
+            "valueNumber": user_id,
+        }
+        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
         results = set()
         for doc in docs:
             results.add(doc.page_content)
@@ -116,12 +115,5 @@ async def delete(request: Request):
     return {"success": True}
 
 
-def signal_handler(_, __):
-    process.terminate()
-    sys.exit(0)
-
-
 if __name__ == "__main__":
-    process = subprocess.Popen(["python", "google.py"])
-    signal.signal(signal.SIGINT, signal_handler)
     uvicorn.run(app, host="0.0.0.0", log_level="warning")
