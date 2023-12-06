@@ -7,7 +7,7 @@ client = weaviate.Client(
     embedded_options=EmbeddedOptions(),
     additional_headers={
         "X-OpenAI-Api-BaseURL": "https://api.openai.com/",
-        "X-OpenAI-Api-Key": os.environ['OPENAI_API_KEY'],  # Replace this with your actual key
+        "X-OpenAI-Api-Key": os.environ['OPENAI_API_KEY'],
     }
 )
 

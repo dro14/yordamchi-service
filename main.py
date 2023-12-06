@@ -2,9 +2,13 @@ from search import make_url, google_search, clean_data
 from contextlib import asynccontextmanager
 from vectordb import client, retriever
 from fastapi import FastAPI, Request
-from bots import yordamchi, google
 from loaders import load_document
+from pyrogram import Client
+import subprocess
 import uvicorn
+import signal
+import sys
+import os
 
 uuids = {}
 file_names = {}
@@ -21,13 +25,19 @@ async def clear(user_id):
         uuids.pop(user_id)
 
 
+yordamchi = Client(
+    "Yordamchi",
+    api_id=os.environ["API_ID"],
+    api_hash=os.environ["API_HASH"],
+    bot_token=os.environ["MAIN_BOT_TOKEN"]
+)
+
+
 @asynccontextmanager
 async def lifespan(_):
     await yordamchi.start()
-    await google.start()
     yield
     await yordamchi.stop()
-    await google.stop()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -48,7 +58,7 @@ async def load(request: Request):
 
     try:
         docs = await load_document(file_name, user_id)
-    except ValueError as e:
+    except Exception as e:
         return {"success": False, "error": str(e)}
     else:
         await clear(user_id)
@@ -106,5 +116,12 @@ async def delete(request: Request):
     return {"success": True}
 
 
+def signal_handler(_, __):
+    process.terminate()
+    sys.exit(0)
+
+
 if __name__ == "__main__":
+    process = subprocess.Popen(["python", "google.py"])
+    signal.signal(signal.SIGINT, signal_handler)
     uvicorn.run(app, host="0.0.0.0", log_level="warning")

@@ -1,14 +1,7 @@
 from search import make_url, google_search, clean_data
-from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
+from pyrogram import Client, filters
 import os
-
-yordamchi = Client(
-    "Yordamchi",
-    api_id=os.environ["API_ID"],
-    api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["MAIN_BOT_TOKEN"]
-)
 
 google = Client(
     "Google",
@@ -29,7 +22,8 @@ async def search(_, message):
     url = await make_url("en", message.text)
     elements = await google_search(url)
     results = await clean_data(elements, with_links=True)
-    await message.reply_text(
-        "\n\n".join(results)[:4096],
-        disable_web_page_preview=True,
-    )
+    await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
+
+
+if __name__ == "__main__":
+    google.run()
