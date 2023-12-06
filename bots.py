@@ -32,6 +32,6 @@ def search(_, message):
     elements = google_search(url)
     results = clean_data(elements, with_links=True)
     message.reply_text(
-        results[:4096],
+        "\n\n".join(results)[:4096],
         disable_web_page_preview=True,
     )
