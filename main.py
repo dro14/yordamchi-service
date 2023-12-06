@@ -47,7 +47,7 @@ async def load(request: Request):
     await yordamchi.download_media(file_id, file_name)
 
     try:
-        docs = load_document(file_name, user_id)
+        docs = await load_document(file_name, user_id)
     except ValueError as e:
         return {"success": False, "error": str(e)}
     else:
