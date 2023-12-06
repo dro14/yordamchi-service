@@ -1,14 +1,13 @@
 from search import make_url, google_search, clean_data
-from contextlib import asynccontextmanager
 from vectordb import client, retriever
 from fastapi import FastAPI, Request
 from loaders import load_document
-import pyrogram
+from bots import yordamchi
 import uvicorn
-import os
 
 uuids = {}
 file_names = {}
+app = FastAPI()
 
 
 def clear(user_id):
@@ -22,24 +21,6 @@ def clear(user_id):
         uuids.pop(user_id)
 
 
-bot = pyrogram.Client(
-    "my_account",
-    api_id=os.environ["API_ID"],
-    api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["BOT_TOKEN"]
-)
-
-
-@asynccontextmanager
-async def lifespan(_):
-    await bot.start()
-    yield
-    await bot.stop()
-
-
-app = FastAPI(lifespan=lifespan)
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
@@ -51,7 +32,7 @@ async def load(request: Request):
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
-    await bot.download_media(file_id, file_name)
+    await yordamchi.download_media(file_id, file_name)
 
     try:
         docs = load_document(file_name, user_id)
