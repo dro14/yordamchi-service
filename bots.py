@@ -9,7 +9,6 @@ yordamchi = Client(
     api_hash=os.environ["API_HASH"],
     bot_token=os.environ["MAIN_BOT_TOKEN"]
 )
-yordamchi.start()
 
 google = Client(
     "Google",
@@ -18,7 +17,6 @@ google = Client(
     bot_token=os.environ["BOT_TOKEN"],
     parse_mode=ParseMode.DISABLED,
 )
-google.start()
 
 
 @google.on_message(filters.private & filters.command("start"))
@@ -35,3 +33,7 @@ def search(_, message):
         "\n\n".join(results)[:4096],
         disable_web_page_preview=True,
     )
+
+
+yordamchi.start()
+google.start()
