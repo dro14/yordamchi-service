@@ -25,33 +25,37 @@ async def remove_newlines(s):
 
 async def load_document(file_name, user_id):
     file_path = "downloads/" + file_name
-    if file_path.endswith(".pdf"):
+    if file_name.endswith(".pdf"):
         docs = PyPDFLoader(file_path).load()
-    elif file_path.endswith(".docx"):
+    elif file_name.endswith(".docx"):
         docs = UnstructuredWordDocumentLoader(file_path).load()
-    elif file_path.endswith(".xlsx"):
+    elif file_name.endswith(".xlsx"):
         docs = UnstructuredExcelLoader(file_path).load()
-    elif file_path.endswith(".pptx"):
+    elif file_name.endswith(".pptx"):
         docs = UnstructuredPowerPointLoader(file_path).load()
-    elif file_path.endswith(".txt"):
+    elif file_name.endswith(".txt"):
         docs = TextLoader(file_path).load()
-    elif file_path.endswith(".csv"):
+    elif file_name.endswith(".csv"):
         docs = CSVLoader(file_path).load()
-    elif file_path.endswith(".epub"):
+    elif file_name.endswith(".epub"):
         docs = UnstructuredEPubLoader(file_path).load()
     else:
         raise ValueError(f"""unsupported file format: {file_name}\n-\n-\n-\n-\nsupported file formats:
-*PDF* [.pdf]
-*Microsoft Word* [.docx]
-*Microsoft Excel* [.xlsx]
-*Microsoft PowerPoint* [.pptx]
-*Text* [.txt]
-*CSV* [.csv]
-*EPUB* [.epub]""")
 
-    file_contents = set()
-    for doc in docs:
-        page_content = await remove_newlines(doc.page_content.strip())
-        file_contents.add(page_content)
-    document = Document(page_content=" ".join(file_contents), metadata={"user_id": user_id})
-    return text_splitter.split_documents([document])
+PDF [*.pdf*]
+Microsoft Word [*.docx*]
+Microsoft Excel [*.xlsx*]
+Microsoft PowerPoint [*.pptx*]
+Text [*.txt*]
+CSV [*.csv*]
+EPUB [*.epub*]""")
+
+    if file_name.endswith((".xlsx", ".csv")):
+        return docs
+    else:
+        file_contents = set()
+        for doc in docs:
+            page_content = await remove_newlines(doc.page_content.strip())
+            file_contents.add(page_content)
+        document = Document(page_content=" ".join(file_contents), metadata={"user_id": user_id})
+        return text_splitter.split_documents([document])
