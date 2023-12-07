@@ -40,19 +40,9 @@ async def load_document(file_name, user_id):
     elif file_path.endswith(".epub"):
         docs = UnstructuredEPubLoader(file_path).load()
     else:
-        raise ValueError(f"""unsupported file format: {file_name}
--
--
--
--
-supported file formats:
-*PDF* [\*.pdf]
-*Microsoft Word* [\*.docx]
-*Microsoft Excel* [\*.xlsx]
-*Microsoft PowerPoint* [\*.pptx]
-*Text* [\*.txt]
-*CSV* [\*.csv]
-*EPUB* [\*.epub]""")
+        raise ValueError(f"unsupported file format: {file_name}\n-\n-\n-\n-\nsupported file formats:"
+                         "\n*PDF* [\*.pdf]\n*Microsoft Word* [\*.docx]\n*Microsoft Excel* [\*.xlsx]\n"
+                         "*Microsoft PowerPoint* [\*.pptx]\n*Text* [\*.txt]\n*CSV* [\*.csv]\n*EPUB* [\*.epub]")
 
     file_contents = set()
     for doc in docs:
