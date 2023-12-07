@@ -6,6 +6,7 @@ from loaders import load_document
 from pyrogram import Client
 import subprocess
 import uvicorn
+import time
 import os
 
 uuids = {}
@@ -63,7 +64,12 @@ async def load(request: Request):
         return {"success": False, "error": str(e)}
     else:
         await clear(user_id)
-        uuids[user_id] = retriever.add_documents(docs)
+        doc_ids = []
+        for i, doc in enumerate(docs):
+            doc_ids.extend(retriever.add_documents([doc]))
+            if i % 10 == 0:
+                time.sleep(0.1)
+        uuids[user_id] = doc_ids
         file_names[user_id] = file_name
         return {"success": True}
 

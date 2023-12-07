@@ -7,6 +7,7 @@ from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.document_loaders.text import TextLoader
 from langchain.document_loaders.pdf import PyPDFLoader
 from langchain.schema.document import Document
+import csv
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
@@ -23,6 +24,27 @@ async def remove_newlines(s):
     return s
 
 
+async def load_csv(file_path):
+    f = open(file_path)
+    rows = csv.reader(f)
+    cleaned_rows = []
+    for row in rows:
+        add = False
+        for item in row:
+            if item.strip():
+                add = True
+        if add:
+            for i in range(len(row)):
+                row[i] = await remove_newlines(row[i].strip())
+            cleaned_rows.append(row)
+    f.close()
+
+    f = open(file_path, "w")
+    writer = csv.writer(f)
+    writer.writerows(cleaned_rows)
+    f.close()
+
+
 async def load_document(file_name, user_id):
     file_path = "downloads/" + file_name
     if file_name.endswith(".pdf"):
@@ -36,19 +58,20 @@ async def load_document(file_name, user_id):
     elif file_name.endswith(".txt"):
         docs = TextLoader(file_path).load()
     elif file_name.endswith(".csv"):
+        await load_csv(file_path)
         docs = CSVLoader(file_path).load()
     elif file_name.endswith(".epub"):
         docs = UnstructuredEPubLoader(file_path).load()
     else:
         raise ValueError(f"""unsupported file format: {file_name}\n-\n-\n-\n-\nsupported file formats:
 
-PDF [*.pdf*]
-Microsoft Word [*.docx*]
-Microsoft Excel [*.xlsx*]
-Microsoft PowerPoint [*.pptx*]
-Text [*.txt*]
-CSV [*.csv*]
-EPUB [*.epub*]""")
+PDF *[.pdf]*
+Microsoft Word *[.docx]*
+Microsoft Excel *[.xlsx]*
+Microsoft PowerPoint *[.pptx]*
+Text *[.txt]*
+CSV *[.csv]*
+EPUB *[.epub]*""")
 
     if file_name.endswith((".xlsx", ".csv")):
         return docs
