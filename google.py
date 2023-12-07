@@ -12,12 +12,12 @@ google = Client(
 )
 
 
-@google.on_message(filters.private & filters.command("start"))
+@google.on_message(filters.incoming & filters.private & filters.command("start"))
 async def start(_, message):
     await message.reply_text("Hello! I'm a bot that can search on Google. Send me a keyword to search.")
 
 
-@google.on_message(filters.private & filters.text)
+@google.on_message(filters.incoming & filters.private & filters.text)
 async def search(_, message):
     url = await make_url("en", message.text)
     elements = await google_search(url)
