@@ -6,6 +6,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.document_loaders.text import TextLoader
 from langchain.document_loaders.pdf import PyPDFLoader
+from pypandoc.pandoc_download import download_pandoc
 from langchain.schema.document import Document
 import csv
 
@@ -61,9 +62,15 @@ async def load_document(file_name, user_id):
         await load_csv(file_path)
         docs = CSVLoader(file_path).load()
     elif file_name.endswith(".epub"):
+        download_pandoc()
         docs = UnstructuredEPubLoader(file_path).load()
     else:
-        raise ValueError(f"""unsupported file format: {file_name}\n-\n-\n-\n-\nsupported file formats:
+        raise ValueError(f"""unsupported file format: {file_name}
+-
+-
+-
+-
+supported file formats:
 
 PDF *[.pdf]*
 Microsoft Word *[.docx]*
