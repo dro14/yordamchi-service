@@ -35,7 +35,7 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     except Exception as e:
         response["success"] = False
         response["error"] = str(e)
-        print(e)
+        print(f"error: {response['error']}")
     else:
         uuids = []
         left = 0
@@ -80,8 +80,8 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
     done.set()
 
 
-def respond(data: dict, target: Callable[[dict, dict, Event], None]) -> dict:
-    print(data)
+async def respond(request: Request, target: Callable[[dict, dict, Event], None]) -> dict:
+    data = await request.json()
     response = {}
     done = Event()
     engine = Thread(target=target, args=(data, response, done))
@@ -89,7 +89,6 @@ def respond(data: dict, target: Callable[[dict, dict, Event], None]) -> dict:
     while not done.wait(0.005):
         await asyncio.sleep(0.095)
     engine.join()
-    print(response)
     return response
 
 
@@ -112,14 +111,12 @@ async def root():
 
 @app.post("/load")
 async def load(request: Request):
-    data = await request.json()
-    return respond(data, load_thread)
+    return await respond(request, load_thread)
 
 
 @app.post("/search")
 async def search(request: Request):
-    data = await request.json()
-    return respond(data, search_thread)
+    return await respond(request, search_thread)
 
 
 @app.post("/memory")
