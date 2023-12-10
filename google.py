@@ -1,6 +1,7 @@
 from search import make_url, google_search, clean_data
-from pyrogram.enums import ParseMode
 from pyrogram import Client, filters
+from pyrogram.enums import ParseMode
+from pyrogram.types import Message
 import os
 
 google = Client(
@@ -13,15 +14,15 @@ google = Client(
 
 
 @google.on_message(filters.incoming & filters.private & filters.command("start"))
-async def start(_, message):
-    await message.reply_text("Hello! I'm a bot that can search on Google. Send me a keyword to search.")
+async def start(_, message: Message):
+    await message.reply_text("Hello!\nI'm a bot that can search on Google.\nSend me a query to search.")
 
 
 @google.on_message(filters.incoming & filters.private & filters.text)
-async def search(_, message):
-    url = await make_url("en", message.text)
-    elements = await google_search(url)
-    results = await clean_data(elements, with_links=True)
+async def search(_, message: Message):
+    url = make_url("en", message.text)
+    elements = google_search(url)
+    results = clean_data(elements, True)
     await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
 
 

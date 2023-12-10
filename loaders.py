@@ -9,6 +9,7 @@ from langchain.document_loaders.pdf import PyPDFLoader
 from pypandoc.pandoc_download import download_pandoc
 from langchain.schema.document import Document
 import csv
+import os
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
@@ -17,7 +18,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 
-async def remove_newlines(s):
+def remove_newlines(s: str) -> str:
     s = s.replace("\n", " ")
     s = s.replace("\\n", " ")
     s = s.replace("  ", " ")
@@ -25,8 +26,8 @@ async def remove_newlines(s):
     return s
 
 
-async def load_csv(file_path):
-    f = open(file_path)
+def clean_csv(file_path: str) -> None:
+    f = open(file_path, "r")
     rows = csv.reader(f)
     cleaned_rows = []
     for row in rows:
@@ -36,7 +37,7 @@ async def load_csv(file_path):
                 add = True
         if add:
             for i in range(len(row)):
-                row[i] = await remove_newlines(row[i].strip())
+                row[i] = remove_newlines(row[i].strip())
             cleaned_rows.append(row)
     f.close()
 
@@ -46,7 +47,7 @@ async def load_csv(file_path):
     f.close()
 
 
-async def load_document(file_name, user_id):
+def load_document(file_name: str, user_id: int) -> list[Document]:
     file_path = "downloads/" + file_name
     if file_name.endswith(".pdf"):
         docs = PyPDFLoader(file_path).load()
@@ -59,12 +60,13 @@ async def load_document(file_name, user_id):
     elif file_name.endswith(".txt"):
         docs = TextLoader(file_path).load()
     elif file_name.endswith(".csv"):
-        await load_csv(file_path)
+        clean_csv(file_path)
         docs = CSVLoader(file_path).load()
     elif file_name.endswith(".epub"):
         download_pandoc()
         docs = UnstructuredEPubLoader(file_path).load()
     else:
+        os.remove(file_path)
         raise ValueError(f"""unsupported file format: {file_name}
 -
 -
@@ -80,12 +82,13 @@ Text *[.txt]*
 CSV *[.csv]*
 EPUB *[.epub]*""")
 
+    os.remove(file_path)
     if file_name.endswith((".xlsx", ".csv")):
         return docs
     else:
-        file_contents = set()
+        contents = set()
         for doc in docs:
-            page_content = await remove_newlines(doc.page_content.strip())
-            file_contents.add(page_content)
-        document = Document(page_content=" ".join(file_contents), metadata={"user_id": user_id})
+            content = remove_newlines(doc.page_content.strip())
+            contents.add(content)
+        document = Document(page_content=" ".join(contents), metadata={"user_id": user_id})
         return text_splitter.split_documents([document])

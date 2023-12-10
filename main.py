@@ -1,29 +1,19 @@
 from search import make_url, google_search, clean_data
+from vectordb import retriever, users, clear
 from contextlib import asynccontextmanager
-from vectordb import client, retriever
 from fastapi import FastAPI, Request
+from threading import Thread, Event
 from loaders import load_document
 from pyrogram import Client
+from typing import Callable
 import subprocess
 import uvicorn
+import asyncio
 import time
 import os
 
-uuids = {}
-file_names = {}
-
-
-async def clear(user_id):
-    try:
-        uuids[user_id]
-    except KeyError:
-        pass
-    else:
-        for uuid in uuids[user_id]:
-            client.data_object.delete(uuid, class_name="LangChain")
-        uuids.pop(user_id)
-        file_names.pop(user_id)
-
+UPLOAD_BATCH_SIZE = 10
+UPLOAD_INTERVAL = 0.1
 
 yordamchi = Client(
     "Yordamchi",
@@ -31,6 +21,76 @@ yordamchi = Client(
     api_hash=os.environ["API_HASH"],
     bot_token=os.environ["MAIN_BOT_TOKEN"]
 )
+
+
+def load_thread(data: dict, response: dict, done: Event) -> None:
+    file_id = data["file_id"]
+    file_name = data["file_name"]
+    user_id = data["user_id"]
+    print(f"file_id: {file_id}", f"file_name: {file_name}", f"user_id: {user_id}", sep="\n")
+    yordamchi.download_media(file_id, file_name)
+
+    try:
+        docs = load_document(file_name, user_id)
+    except Exception as e:
+        response["success"] = False
+        response["error"] = str(e)
+        print(e)
+    else:
+        uuids = []
+        left = 0
+        right = UPLOAD_BATCH_SIZE
+        while left < len(docs):
+            uuids.extend(retriever.add_documents(docs[left:right]))
+            left, right = right, right + UPLOAD_BATCH_SIZE
+            time.sleep(UPLOAD_INTERVAL)
+        clear(user_id)
+        users[user_id] = {"uuids": uuids, "file_name": file_name}
+        response["success"] = True
+
+    print(f"success: {response['success']}")
+    done.set()
+
+
+def search_thread(data: dict, response: dict, done: Event) -> None:
+    query = data["query"]
+    lang = data["lang"]
+    user_id = data["user_id"]
+    print(f"query: {query}", f"lang: {lang}", f"user_id: {user_id}", sep="\n")
+
+    try:
+        users[user_id]
+    except KeyError:
+        url = make_url(lang, query)
+        elements = google_search(url)
+        results = clean_data(elements, False)
+    else:
+        where_filter = {
+            "path": ["user_id"],
+            "operator": "Equal",
+            "valueNumber": user_id,
+        }
+        results = set()
+        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
+        for doc in docs:
+            results.add(doc.page_content)
+
+    response["results"] = "\n\n".join(results)
+    print(response["results"])
+    done.set()
+
+
+def respond(data: dict, target: Callable[[dict, dict, Event], None]) -> dict:
+    print(data)
+    response = {}
+    done = Event()
+    engine = Thread(target=target, args=(data, response, done))
+    engine.start()
+    while not done.wait(0.005):
+        await asyncio.sleep(0.095)
+    engine.join()
+    print(response)
+    return response
 
 
 @asynccontextmanager
@@ -53,52 +113,13 @@ async def root():
 @app.post("/load")
 async def load(request: Request):
     data = await request.json()
-    file_id = data["file_id"]
-    file_name = data["file_name"]
-    user_id = data["user_id"]
-    await yordamchi.download_media(file_id, file_name)
-
-    try:
-        docs = await load_document(file_name, user_id)
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-    else:
-        await clear(user_id)
-        doc_ids = []
-        for i, doc in enumerate(docs):
-            doc_ids.extend(retriever.add_documents([doc]))
-            if i % 10 == 0:
-                time.sleep(0.1)
-        uuids[user_id] = doc_ids
-        file_names[user_id] = file_name
-        return {"success": True}
+    return respond(data, load_thread)
 
 
 @app.post("/search")
 async def search(request: Request):
     data = await request.json()
-    query = data["query"]
-    lang = data["lang"]
-    user_id = data["user_id"]
-
-    try:
-        uuids[user_id]
-    except KeyError:
-        url = await make_url(lang, query)
-        elements = await google_search(url)
-        results = await clean_data(elements, with_links=False)
-        return {"results": "\n\n".join(results)}
-    else:
-        where_filter = {
-            "path": ["user_id"],
-            "operator": "Equal",
-            "valueNumber": user_id,
-        }
-        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
-        results = set()
-        for doc in docs:
-            results.add(doc.page_content)
-        return {"results": "\n\n".join(results)}
+    return respond(data, search_thread)
 
 
 @app.post("/memory")
@@ -106,18 +127,18 @@ async def memory(request: Request):
     data = await request.json()
     user_id = data["user_id"]
     try:
-        file_name = file_names[user_id]
+        user = users[user_id]
     except KeyError:
         return {"source": "Google"}
     else:
-        return {"source": file_name}
+        return {"source": user["file_name"]}
 
 
 @app.post("/delete")
 async def delete(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    await clear(user_id)
+    clear(user_id)
     return {"success": True}
 
 

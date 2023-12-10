@@ -1,4 +1,5 @@
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.common.by import By
 from urllib.parse import quote
@@ -6,14 +7,14 @@ from urllib.parse import quote
 options = FirefoxOptions()
 options.add_argument("--headless")
 driver = Firefox(options=options)
-driver.implicitly_wait(1)
+driver.implicitly_wait(0.5)
 
 
-async def make_url(lang, query):
-    return f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q=" + quote(query)
+def make_url(lang: str, query: str) -> str:
+    return f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q={quote(query)}"
 
 
-async def google_search(url):
+def google_search(url: str) -> list[WebElement]:
     driver.get(url)
 
     try:
@@ -34,14 +35,13 @@ async def google_search(url):
     return elements
 
 
-async def clean_data(elements, with_links=True):
+def clean_data(elements: list[WebElement], with_links: bool) -> set[str]:
     results = set()
     for element in elements:
         if not element.text.strip():
             continue
 
         lines = element.text.splitlines()
-
         i = 0
         while i < len(lines):
             lines[i] = lines[i].strip()
@@ -55,10 +55,8 @@ async def clean_data(elements, with_links=True):
                 link = element.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
             except NoSuchElementException:
                 link = None
-
             if link:
                 lines.append(link)
 
         results.add("\n".join(lines))
-
     return results
