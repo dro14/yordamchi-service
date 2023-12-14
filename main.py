@@ -27,7 +27,6 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
-    print(f"file_id: {file_id}", f"file_name: {file_name}", f"user_id: {user_id}", sep="\n")
     yordamchi.download_media(file_id, file_name)
 
     try:
@@ -48,7 +47,6 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
         users[user_id] = {"uuids": uuids, "file_name": file_name}
         response["success"] = True
 
-    print(f"success: {response['success']}")
     done.set()
 
 
@@ -56,7 +54,6 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
     query = data["query"]
     lang = data["lang"]
     user_id = data["user_id"]
-    print(f"query: {query}", f"lang: {lang}", f"user_id: {user_id}", sep="\n")
 
     try:
         users[user_id]
@@ -76,7 +73,6 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
             results.add(doc.page_content)
 
     response["results"] = "\n\n".join(results)
-    print(response["results"])
     done.set()
 
 
@@ -140,4 +136,4 @@ async def delete(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning", timeout_keep_alive=600)
