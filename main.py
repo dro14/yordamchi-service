@@ -135,5 +135,13 @@ async def delete(request: Request):
     return {"success": True}
 
 
+@app.post("/logs")
+async def logs(request: Request):
+    data = await request.json()
+    user_id = data["user_id"]
+    await yordamchi.send_document(user_id, "yordamchi-service.log")
+    return {"success": True}
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")

@@ -3,6 +3,9 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.common.by import By
 from urllib.parse import quote
+import sys
+
+sys.stdout = open("yordamchi-service.log", "a")
 
 options = FirefoxOptions()
 options.add_argument("--headless")
