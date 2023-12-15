@@ -142,8 +142,12 @@ async def delete(request: Request):
 async def logs(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    await yordamchi.send_document(user_id, "yordamchi-service.log")
-    return {"success": True}
+    try:
+        await yordamchi.send_document(user_id, "yordamchi-service.log")
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    else:
+        return {"success": True}
 
 
 if __name__ == "__main__":

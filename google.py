@@ -18,6 +18,11 @@ async def start(_, message: Message):
     await message.reply_text("Hello!\nI'm a bot that can search on Google.\nSend me a query to search.")
 
 
+@google.on_message(filters.incoming & filters.private & filters.command("logs"))
+async def logs(_, message: Message):
+    await google.send_document(message.from_user.id, "yordamchi-service.log")
+
+
 @google.on_message(filters.incoming & filters.private & filters.text)
 async def search(_, message: Message):
     results = google_search(message.text, "en", True)
