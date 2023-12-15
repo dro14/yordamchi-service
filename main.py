@@ -10,7 +10,12 @@ import subprocess
 import uvicorn
 import asyncio
 import time
+import sys
 import os
+
+log_file = open("yordamchi-service.log", "a")
+sys.stdout = log_file
+sys.stderr = log_file
 
 UPLOAD_BATCH_SIZE = 10
 UPLOAD_INTERVAL = 0.1
@@ -95,6 +100,7 @@ async def lifespan(_):
     yield
     await yordamchi.stop()
     process.terminate()
+    log_file.close()
 
 
 app = FastAPI(lifespan=lifespan)
