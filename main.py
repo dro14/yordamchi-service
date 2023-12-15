@@ -1,9 +1,9 @@
-from search import make_url, google_search, clean_data
 from vectordb import retriever, users, clear
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
+from search import google_search
 from pyrogram import Client
 from typing import Callable
 import subprocess
@@ -12,10 +12,6 @@ import asyncio
 import time
 import sys
 import os
-
-log_file = open("yordamchi-service.log", "a")
-sys.stdout = log_file
-sys.stderr = log_file
 
 UPLOAD_BATCH_SIZE = 10
 UPLOAD_INTERVAL = 0.1
@@ -63,9 +59,7 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
     try:
         users[user_id]
     except KeyError:
-        url = make_url(lang, query)
-        elements = google_search(url)
-        results = clean_data(elements, False)
+        results = google_search(query, lang, False)
     else:
         where_filter = {
             "path": ["user_id"],
@@ -97,6 +91,9 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 async def lifespan(_):
     await yordamchi.start()
     process = subprocess.Popen(["python", "google.py"])
+    log_file = open("yordamchi-service.log", "a")
+    sys.stdout = log_file
+    sys.stderr = log_file
     yield
     await yordamchi.stop()
     process.terminate()

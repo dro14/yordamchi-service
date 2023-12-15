@@ -21,6 +21,7 @@ retriever = WeaviateHybridSearchRetriever(
     k=3,
     attributes=[],
     create_schema_if_missing=True,
+    verbose=True,
 )
 
 

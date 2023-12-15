@@ -1,20 +1,16 @@
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.common.by import By
 from urllib.parse import quote
 
-options = FirefoxOptions()
-options.add_argument("--headless")
-driver = Firefox(options=options)
-driver.implicitly_wait(0.5)
 
+def google_search(query: str, lang: str, with_links: bool) -> set[str]:
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = Firefox(options=options)
+    driver.implicitly_wait(0.5)
 
-def make_url(lang: str, query: str) -> str:
-    return f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q={quote(query)}"
-
-
-def google_search(url: str) -> list[WebElement]:
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q={quote(query)}"
     driver.get(url)
 
     try:
@@ -32,10 +28,6 @@ def google_search(url: str) -> list[WebElement]:
     except NoSuchElementException:
         pass
 
-    return elements
-
-
-def clean_data(elements: list[WebElement], with_links: bool) -> set[str]:
     results = set()
     for element in elements:
         if not element.text.strip():
@@ -59,4 +51,6 @@ def clean_data(elements: list[WebElement], with_links: bool) -> set[str]:
                 lines.append(link)
 
         results.add("\n".join(lines))
+
+    driver.quit()
     return results

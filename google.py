@@ -1,7 +1,7 @@
-from search import make_url, google_search, clean_data
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
+from search import google_search
 import os
 
 google = Client(
@@ -20,9 +20,7 @@ async def start(_, message: Message):
 
 @google.on_message(filters.incoming & filters.private & filters.text)
 async def search(_, message: Message):
-    url = make_url("en", message.text)
-    elements = google_search(url)
-    results = clean_data(elements, True)
+    results = google_search(message.text, "en", True)
     await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
 
 
