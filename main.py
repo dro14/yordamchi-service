@@ -6,12 +6,18 @@ from loaders import load_document
 from search import google_search
 from pyrogram import Client
 from typing import Callable
+import tracemalloc
 import subprocess
 import uvicorn
 import asyncio
 import time
 import sys
 import os
+
+log_file = open("yordamchi-service.log", "a")
+sys.stdout = log_file
+sys.stderr = log_file
+tracemalloc.start()
 
 UPLOAD_BATCH_SIZE = 10
 UPLOAD_INTERVAL = 0.1
@@ -91,9 +97,6 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 async def lifespan(_):
     await yordamchi.start()
     process = subprocess.Popen(["python", "google.py"])
-    log_file = open("yordamchi-service.log", "a")
-    sys.stdout = log_file
-    sys.stderr = log_file
     yield
     await yordamchi.stop()
     process.terminate()
@@ -140,10 +143,15 @@ async def delete(request: Request):
 
 @app.post("/logs")
 async def logs(request: Request):
+    global log_file
     data = await request.json()
     user_id = data["user_id"]
     try:
+        log_file.close()
         await yordamchi.send_document(user_id, "yordamchi-service.log")
+        log_file = open("yordamchi-service.log", "a")
+        sys.stdout = log_file
+        sys.stderr = log_file
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:
