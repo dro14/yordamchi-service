@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
 from search import google_search
@@ -30,4 +30,7 @@ async def search(_, message: Message):
 
 
 if __name__ == "__main__":
-    google.run()
+    google.start()
+    google.send_message(1331278972, "@web_searching_bot restarted")
+    idle()
+    google.send_document(1331278972, "yordamchi-service.log")

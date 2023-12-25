@@ -99,8 +99,8 @@ async def lifespan(_):
     process = subprocess.Popen(["python", "google.py"])
     yield
     await yordamchi.stop()
-    process.terminate()
     log_file.close()
+    process.terminate()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -130,28 +130,21 @@ async def memory(request: Request):
     except KeyError:
         return {"source": "Google"}
     else:
-        return {"source": user["file_name"]}
+        if user_id == 1331278972:
+            source = user['file_name']
+            for user_id, user in users.items():
+                source += f"\n{user_id}: {user['file_name']}"
+            return {"source": source}
+        else:
+            return {"source": user["file_name"]}
 
 
 @app.post("/delete")
 async def delete(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    clear(user_id)
-    return {"success": True}
-
-
-@app.post("/logs")
-async def logs(request: Request):
-    global log_file
-    data = await request.json()
-    user_id = data["user_id"]
     try:
-        log_file.close()
-        await yordamchi.send_document(user_id, "yordamchi-service.log")
-        log_file = open("yordamchi-service.log", "a")
-        sys.stdout = log_file
-        sys.stderr = log_file
+        clear(user_id)
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:
