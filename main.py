@@ -14,7 +14,7 @@ import time
 import sys
 import os
 
-logs = open("yordamchi-service.log", "a")
+logs = open("yordamchi-service.log", "w")
 sys.stdout = logs
 sys.stderr = logs
 tracemalloc.start()
@@ -34,7 +34,9 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
+    yordamchi.start()
     yordamchi.download_media(file_id, file_name)
+    yordamchi.stop(block=False)
 
     try:
         docs = load_document(file_name, user_id)
@@ -96,10 +98,8 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 
 @asynccontextmanager
 async def lifespan(_):
-    await yordamchi.start()
     google = subprocess.Popen(["python", "google.py"])
     yield
-    await yordamchi.stop()
     logs.close()
     google.terminate()
 
@@ -144,6 +144,20 @@ async def delete(request: Request):
     user_id = data["user_id"]
     try:
         clear(user_id)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    else:
+        return {"success": True}
+
+
+@app.post("/logs")
+async def logs(request: Request):
+    data = await request.json()
+    user_id = data["user_id"]
+    try:
+        await yordamchi.start()
+        await yordamchi.send_document(user_id, "yordamchi-service.log")
+        await yordamchi.stop(block=False)
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:
