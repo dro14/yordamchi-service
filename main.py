@@ -14,9 +14,9 @@ import time
 import sys
 import os
 
-log_file = open("yordamchi-service.log", "a")
-sys.stdout = log_file
-sys.stderr = log_file
+logs = open("yordamchi-service.log", "a")
+sys.stdout = logs
+sys.stderr = logs
 tracemalloc.start()
 
 UPLOAD_BATCH_SIZE = 10
@@ -41,7 +41,8 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     except Exception as e:
         response["success"] = False
         response["error"] = str(e)
-        print(f"error: {response['error']}")
+        if not response["error"].startswith("unsupported file format"):
+            print(f"error: {response['error']}")
     else:
         uuids = []
         left = 0
@@ -96,11 +97,11 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 @asynccontextmanager
 async def lifespan(_):
     await yordamchi.start()
-    process = subprocess.Popen(["python", "google.py"])
+    google = subprocess.Popen(["python", "google.py"])
     yield
     await yordamchi.stop()
-    log_file.close()
-    process.terminate()
+    logs.close()
+    google.terminate()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -128,15 +129,13 @@ async def memory(request: Request):
     try:
         user = users[user_id]
     except KeyError:
-        return {"source": "Google"}
+        source = "Google"
     else:
-        if user_id == 1331278972:
-            source = user['file_name']
-            for user_id, user in users.items():
-                source += f"\n{user_id}: {user['file_name']}"
-            return {"source": source}
-        else:
-            return {"source": user["file_name"]}
+        source = user["file_name"]
+    if user_id == 1331278972:
+        for user_id, user in users.items():
+            source += f"\n{user_id}: {user['file_name']}"
+    return {"source": source}
 
 
 @app.post("/delete")
