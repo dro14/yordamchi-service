@@ -10,17 +10,12 @@ import tracemalloc
 import subprocess
 import uvicorn
 import asyncio
-import time
 import sys
 import os
 
-UPLOAD_BATCH_SIZE = 10
-UPLOAD_INTERVAL = 0.1
-
-log_file = open("yordamchi-service.log", "w")
-sys.stdout = log_file
-sys.stderr = log_file
 tracemalloc.start()
+sys.stdout = open("yordamchi-service.log", "w")
+sys.stderr = sys.stdout
 
 yordamchi = Client(
     "Yordamchi",
@@ -43,16 +38,10 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
         response["success"] = False
         response["error"] = str(e)
         if not response["error"].startswith("unsupported file format"):
-            print(f"error: {response['error']}")
+            print(f"error while loading a file: {response['error']}")
     else:
-        uuids = []
-        left = 0
-        right = UPLOAD_BATCH_SIZE
-        while left < len(docs):
-            uuids.extend(retriever.add_documents(docs[left:right]))
-            left, right = right, right + UPLOAD_BATCH_SIZE
-            time.sleep(UPLOAD_INTERVAL)
         clear(user_id)
+        uuids = retriever.add_documents(docs)
         users[user_id] = {"uuids": uuids, "file_name": file_name}
         response["success"] = True
 
@@ -74,8 +63,8 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
             "operator": "Equal",
             "valueNumber": user_id,
         }
-        results = set()
         docs = retriever.get_relevant_documents(query, where_filter=where_filter)
+        results = set()
         for doc in docs:
             results.add(doc.page_content)
 
@@ -100,7 +89,6 @@ async def lifespan(_):
     google = subprocess.Popen(["python", "google.py"])
     await yordamchi.start()
     yield
-    log_file.close()
     google.terminate()
     await yordamchi.stop()
 
@@ -127,15 +115,18 @@ async def search(request: Request):
 async def memory(request: Request):
     data = await request.json()
     user_id = data["user_id"]
+
     try:
         user = users[user_id]
     except KeyError:
         source = "Google"
     else:
         source = user["file_name"]
+
     if user_id == 1331278972:
         for user_id, user in users.items():
             source += f"\n{user_id}: {user['file_name']}"
+
     return {"source": source}
 
 
@@ -143,6 +134,7 @@ async def memory(request: Request):
 async def delete(request: Request):
     data = await request.json()
     user_id = data["user_id"]
+
     try:
         clear(user_id)
     except Exception as e:
@@ -155,6 +147,7 @@ async def delete(request: Request):
 async def logs(request: Request):
     data = await request.json()
     user_id = data["user_id"]
+
     if user_id != 1331278972:
         return {"success": False, "error": "forbidden"}
 

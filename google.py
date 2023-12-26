@@ -34,4 +34,3 @@ if __name__ == "__main__":
     google.start()
     google.send_message(1331278972, "@web_searching_bot restarted")
     idle()
-    google.send_document(1331278972, "yordamchi-service.log")
