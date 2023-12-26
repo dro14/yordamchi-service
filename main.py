@@ -17,9 +17,9 @@ import os
 UPLOAD_BATCH_SIZE = 10
 UPLOAD_INTERVAL = 0.1
 
-logs = open("yordamchi-service.log", "w")
-sys.stdout = logs
-sys.stderr = logs
+log_file = open("yordamchi-service.log", "w")
+sys.stdout = log_file
+sys.stderr = log_file
 tracemalloc.start()
 
 yordamchi = Client(
@@ -100,7 +100,7 @@ async def lifespan(_):
     google = subprocess.Popen(["python", "google.py"])
     await yordamchi.start()
     yield
-    logs.close()
+    log_file.close()
     google.terminate()
     await yordamchi.stop()
 
