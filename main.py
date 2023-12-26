@@ -14,19 +14,20 @@ import time
 import sys
 import os
 
+UPLOAD_BATCH_SIZE = 10
+UPLOAD_INTERVAL = 0.1
+
 logs = open("yordamchi-service.log", "w")
 sys.stdout = logs
 sys.stderr = logs
 tracemalloc.start()
 
-UPLOAD_BATCH_SIZE = 10
-UPLOAD_INTERVAL = 0.1
-
 yordamchi = Client(
     "Yordamchi",
     api_id=os.environ["API_ID"],
     api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["MAIN_BOT_TOKEN"]
+    bot_token=os.environ["MAIN_BOT_TOKEN"],
+    in_memory=True,
 )
 
 
@@ -34,9 +35,7 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
-    yordamchi.start()
     yordamchi.download_media(file_id, file_name)
-    yordamchi.stop(block=False)
 
     try:
         docs = load_document(file_name, user_id)
@@ -99,9 +98,11 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 @asynccontextmanager
 async def lifespan(_):
     google = subprocess.Popen(["python", "google.py"])
+    await yordamchi.start()
     yield
     logs.close()
     google.terminate()
+    await yordamchi.stop()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -154,12 +155,16 @@ async def delete(request: Request):
 async def logs(request: Request):
     data = await request.json()
     user_id = data["user_id"]
-    try:
-        await yordamchi.start()
-        await yordamchi.send_document(user_id, "yordamchi-service.log")
-        await yordamchi.stop(block=False)
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    if user_id != 1331278972:
+        return {"success": False, "error": "forbidden"}
+
+    completed_process = subprocess.run(["python", "yordamchi.py"])
+    if completed_process.stderr:
+        return {"success": False, "error": completed_process.stderr.decode()}
+    elif completed_process.stdout:
+        return {"success": False, "error": completed_process.stdout.decode()}
+    elif completed_process.returncode:
+        return {"success": False, "error": f"unknown error: return code {completed_process.returncode}"}
     else:
         return {"success": True}
 

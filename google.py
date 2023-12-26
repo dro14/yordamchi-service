@@ -9,6 +9,7 @@ google = Client(
     api_id=os.environ["API_ID"],
     api_hash=os.environ["API_HASH"],
     bot_token=os.environ["BOT_TOKEN"],
+    in_memory=True,
     parse_mode=ParseMode.DISABLED,
 )
 
