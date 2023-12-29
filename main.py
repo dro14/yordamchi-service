@@ -27,6 +27,9 @@ yordamchi = Client(
 
 
 def load_thread(data: dict, response: dict, done: Event) -> None:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     file_id = data["file_id"]
     file_name = data["file_name"]
     user_id = data["user_id"]
@@ -46,9 +49,13 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
         response["success"] = True
 
     done.set()
+    loop.close()
 
 
 def search_thread(data: dict, response: dict, done: Event) -> None:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     query = data["query"]
     lang = data["lang"]
     user_id = data["user_id"]
@@ -70,6 +77,7 @@ def search_thread(data: dict, response: dict, done: Event) -> None:
 
     response["results"] = "\n\n".join(results)
     done.set()
+    loop.close()
 
 
 async def respond(request: Request, target: Callable[[dict, dict, Event], None]) -> dict:
