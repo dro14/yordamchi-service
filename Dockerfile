@@ -7,9 +7,9 @@ RUN apt-get update -y && apt-get install -y \
     tar \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.33.0-linux64.tar.gz \
-    && tar -zxf geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bin \
-    && rm geckodriver-v0.33.0-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-linux64.tar.gz \
+    && tar -zxf geckodriver-v0.34.0-linux64.tar.gz -C /usr/local/bin \
+    && rm geckodriver-v0.34.0-linux64.tar.gz
 
 WORKDIR /app
 
