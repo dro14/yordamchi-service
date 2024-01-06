@@ -1,4 +1,4 @@
-FROM python:3.10.12-slim
+FROM python:3.12.1-slim
 
 RUN apt-get update -y && apt-get install -y \
     firefox-esr \
