@@ -1,4 +1,4 @@
-from langchain.retrievers import WeaviateHybridSearchRetriever
+from langchain_community.retrievers import WeaviateHybridSearchRetriever
 from weaviate import EmbeddedOptions
 import weaviate
 import os

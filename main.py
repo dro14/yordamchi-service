@@ -94,10 +94,9 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 
 @asynccontextmanager
 async def lifespan(_):
-    google = subprocess.Popen(["python", "google.py"])
+    Thread(target=subprocess.run, args=(["python", "google.py"],)).start()
     await yordamchi.start()
     yield
-    google.terminate()
     await yordamchi.stop()
 
 

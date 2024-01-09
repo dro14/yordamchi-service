@@ -24,12 +24,14 @@ h11==0.14.0
 idna==3.6
 joblib==1.3.2
 jsonpatch==1.33
+jsonpath-python==1.0.6
 jsonpointer==2.4
 langchain==0.1.0
-langchain-core==0.1.7
+langchain-community==0.0.10
+langchain-core==0.1.8
 langdetect==1.0.9
-langsmith==0.0.77
-lxml==5.0.1
+langsmith==0.0.78
+lxml==5.1.0
 marshmallow==3.20.1
 multidict==6.0.4
 mypy-extensions==1.0.0
@@ -40,7 +42,7 @@ openpyxl==3.1.2
 outcome==1.3.0.post0
 packaging==23.2
 pandas==2.1.4
-Pillow==10.2.0
+pillow==10.2.0
 pyaes==1.6.1
 pycparser==2.21
 pydantic==2.5.3
@@ -76,6 +78,7 @@ typing-inspect==0.9.0
 typing_extensions==4.9.0
 tzdata==2023.4
 unstructured==0.11.8
+unstructured-client==0.15.2
 urllib3==2.1.0
 uvicorn==0.25.0
 validators==0.22.0
