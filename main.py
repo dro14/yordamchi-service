@@ -14,8 +14,9 @@ import sys
 import os
 
 tracemalloc.start()
-sys.stdout = open("yordamchi-service.log", "w")
-sys.stderr = sys.stdout
+log_file = open("yordamchi-service.log", "w")
+sys.stdout = log_file
+sys.stderr = log_file
 
 yordamchi = Client(
     "Yordamchi",
@@ -94,10 +95,12 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 
 @asynccontextmanager
 async def lifespan(_):
-    Thread(target=subprocess.run, args=(["python", "google.py"],)).start()
     await yordamchi.start()
+    google = subprocess.Popen(["python", "google.py"], stdout=log_file, stderr=log_file)
     yield
     await yordamchi.stop()
+    google.terminate()
+    subprocess.run(["python", "yordamchi.py"], stdout=log_file, stderr=log_file)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -158,7 +161,7 @@ async def logs(request: Request):
     if user_id != 1331278972:
         return {"success": False, "error": "forbidden"}
 
-    completed_process = subprocess.run(["python", "yordamchi.py"])
+    completed_process = subprocess.run(["python", "yordamchi.py"], stdout=log_file, stderr=log_file)
     if completed_process.stderr:
         return {"success": False, "error": completed_process.stderr.decode()}
     elif completed_process.stdout:
