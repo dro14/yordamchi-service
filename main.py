@@ -108,7 +108,7 @@ async def search(request: Request):
         return {"success": True, "results": "\n\n".join(results)}
 
     try:
-        results = google_search(query, lang, False)
+        results = google_search(query, lang)
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:

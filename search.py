@@ -9,7 +9,7 @@ driver = Firefox(options=options)
 driver.implicitly_wait(0.5)
 
 
-def google_search(query: str, lang: str, with_links: bool) -> set[str]:
+def google_search(query: str, lang: str) -> set[str]:
     url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
     driver.get(url)
 
@@ -42,15 +42,13 @@ def google_search(query: str, lang: str, with_links: bool) -> set[str]:
             else:
                 i += 1
 
-        if with_links:
-            try:
-                link = element.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
-            except NoSuchElementException:
-                pass
-            else:
-                lines.append(link)
+        try:
+            link = element.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
+        except NoSuchElementException:
+            pass
+        else:
+            lines.append(link)
 
         results.add("\n".join(lines))
 
-    driver.quit()
     return results
