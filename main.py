@@ -53,34 +53,6 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     loop.close()
 
 
-def search_thread(data: dict, response: dict, done: Event) -> None:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    query = data["query"]
-    lang = data["lang"]
-    user_id = data["user_id"]
-
-    try:
-        users[user_id]
-    except KeyError:
-        results = google_search(query, lang, False)
-    else:
-        where_filter = {
-            "path": ["user_id"],
-            "operator": "Equal",
-            "valueNumber": user_id,
-        }
-        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
-        results = set()
-        for doc in docs:
-            results.add(doc.page_content)
-
-    response["results"] = "\n\n".join(results)
-    done.set()
-    loop.close()
-
-
 async def respond(request: Request, target: Callable[[dict, dict, Event], None]) -> dict:
     data = await request.json()
     response = {}
@@ -118,7 +90,29 @@ async def load(request: Request):
 
 @app.post("/search")
 async def search(request: Request):
-    return await respond(request, search_thread)
+    data = await request.json()
+    query = data["query"]
+    lang = data["lang"]
+    user_id = data["user_id"]
+
+    if user_id in users:
+        where_filter = {
+            "path": ["user_id"],
+            "operator": "Equal",
+            "valueNumber": user_id,
+        }
+        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
+        results = set()
+        for doc in docs:
+            results.add(doc.page_content)
+        return {"success": True, "results": "\n\n".join(results)}
+
+    try:
+        results = google_search(query, lang, False)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    else:
+        return {"success": True, "results": "\n\n".join(results)}
 
 
 @app.post("/memory")

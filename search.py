@@ -5,13 +5,12 @@ from urllib.parse import quote
 
 options = FirefoxOptions()
 options.add_argument("--headless")
+driver = Firefox(options=options)
+driver.implicitly_wait(0.5)
 
 
 def google_search(query: str, lang: str, with_links: bool) -> set[str]:
-    driver = Firefox(options=options)
-    driver.implicitly_wait(0.5)
-
-    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=10&q={quote(query)}"
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
     driver.get(url)
 
     try:
