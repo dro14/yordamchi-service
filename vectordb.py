@@ -1,5 +1,5 @@
 from langchain_community.retrievers import WeaviateHybridSearchRetriever
-from weaviate import EmbeddedOptions
+from weaviate.embedded import EmbeddedOptions
 import weaviate
 import os
 
