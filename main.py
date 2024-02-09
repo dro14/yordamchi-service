@@ -68,11 +68,10 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
 @asynccontextmanager
 async def lifespan(_):
     await yordamchi.start()
-    google = subprocess.Popen(["python", "google.py"], stdout=log_file, stderr=log_file)
+    google = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
     yield
     await yordamchi.stop()
     google.terminate()
-    subprocess.run(["python", "yordamchi.py"], stdout=log_file, stderr=log_file)
 
 
 app = FastAPI(lifespan=lifespan)
