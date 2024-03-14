@@ -11,6 +11,21 @@ from langchain.schema.document import Document
 import csv
 import os
 
+UNSUPPORTED_FILE_FORMAT = """unsupported file format: {file_name}
+-
+-
+-
+-
+supported file formats:
+
+PDF *[.pdf]*
+Microsoft Word *[.docx]*
+Microsoft Excel *[.xlsx]*
+Microsoft PowerPoint *[.pptx]*
+Text *[.txt]*
+CSV *[.csv]*
+EPUB *[.epub]*"""
+
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
     chunk_overlap=100,
@@ -67,20 +82,7 @@ def load_document(file_name: str, user_id: int) -> list[Document]:
         docs = UnstructuredEPubLoader(file_path).load()
     else:
         os.remove(file_path)
-        raise ValueError(f"""unsupported file format: {file_name}
--
--
--
--
-supported file formats:
-
-PDF *[.pdf]*
-Microsoft Word *[.docx]*
-Microsoft Excel *[.xlsx]*
-Microsoft PowerPoint *[.pptx]*
-Text *[.txt]*
-CSV *[.csv]*
-EPUB *[.epub]*""")
+        raise ValueError(UNSUPPORTED_FILE_FORMAT.format(file_name=file_name))
 
     os.remove(file_path)
     if file_name.endswith((".xlsx", ".csv")):
