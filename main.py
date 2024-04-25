@@ -1,3 +1,4 @@
+from pylatexenc.latex2text import LatexNodes2Text
 from vectordb import retriever, users, clear
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -17,6 +18,7 @@ tracemalloc.start()
 log_file = open("yordamchi-service.log", "w")
 sys.stdout = log_file
 sys.stderr = log_file
+ltx = LatexNodes2Text()
 
 yordamchi = Client(
     "Yordamchi",
@@ -25,6 +27,18 @@ yordamchi = Client(
     bot_token=os.environ["MAIN_BOT_TOKEN"],
     in_memory=True,
 )
+
+
+@asynccontextmanager
+async def lifespan(_):
+    await yordamchi.start()
+    google = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
+    yield
+    await yordamchi.stop()
+    google.terminate()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 def load_thread(data: dict, response: dict, done: Event) -> None:
@@ -63,18 +77,6 @@ async def respond(request: Request, target: Callable[[dict, dict, Event], None])
         await asyncio.sleep(0.095)
     engine.join()
     return response
-
-
-@asynccontextmanager
-async def lifespan(_):
-    await yordamchi.start()
-    google = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
-    yield
-    await yordamchi.stop()
-    google.terminate()
-
-
-app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -163,6 +165,14 @@ async def logs(request: Request):
         return {"success": False, "error": f"unknown error: return code {completed_process.returncode}"}
     else:
         return {"success": True}
+
+
+@app.post("/latex2text")
+async def latex2text(request: Request):
+    data = await request.json()
+    latex = data["latex"]
+    text = ltx.latex_to_text(latex)
+    return {"text": text}
 
 
 if __name__ == "__main__":
