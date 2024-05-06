@@ -10,7 +10,7 @@ driver.implicitly_wait(0.5)
 
 
 def google_search(query: str, lang: str) -> set[str]:
-    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=3&q={quote(query)}"
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=1&q={quote(query)}"
     driver.get(url)
 
     try:
