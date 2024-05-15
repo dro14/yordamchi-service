@@ -46,7 +46,7 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     asyncio.set_event_loop(loop)
 
     file_id = data["file_id"]
-    file_name = data["file_name"]
+    file_name = data["file_name"].replace(" ", "_")
     user_id = data["user_id"]
     yordamchi.download_media(file_id, file_name)
 
