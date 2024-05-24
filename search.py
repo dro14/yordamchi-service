@@ -47,7 +47,8 @@ def search_in_google(query: str, lang: str) -> set[str]:
         except NoSuchElementException:
             pass
         else:
-            lines.append(link)
+            if link:
+                lines.append(link)
 
         results.add("\n".join(lines))
 
