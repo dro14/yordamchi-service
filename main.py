@@ -93,20 +93,28 @@ async def load(request: Request):
 async def search(request: Request):
     data = await request.json()
     query = data["query"]
-    lang = data["lang"]
     user_id = data["user_id"]
 
-    if user_id in users:
-        where_filter = {
-            "path": ["user_id"],
-            "operator": "Equal",
-            "valueNumber": user_id,
-        }
-        docs = retriever.get_relevant_documents(query, where_filter=where_filter)
-        results = set()
-        for doc in docs:
-            results.add(doc.page_content)
-        return {"success": True, "results": "\n\n".join(results)}
+    if user_id not in users:
+        return {"success": False, "error": "no documents loaded"}
+
+    where_filter = {
+        "path": ["user_id"],
+        "operator": "Equal",
+        "valueNumber": user_id,
+    }
+    docs = retriever.get_relevant_documents(query, where_filter=where_filter)
+    results = set()
+    for doc in docs:
+        results.add(doc.page_content)
+    return {"success": True, "results": "\n\n".join(results)}
+
+
+@app.post("/google_search")
+async def google_search(request: Request):
+    data = await request.json()
+    query = data["query"]
+    lang = data["lang"]
 
     try:
         results = google_search(query, lang)
