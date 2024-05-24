@@ -9,7 +9,7 @@ driver = Firefox(options=options)
 driver.implicitly_wait(0.5)
 
 
-def google_search(query: str, lang: str) -> set[str]:
+def search_in_google(query: str, lang: str) -> set[str]:
     url = f"https://www.google.com/search?hl={lang}&gl=uz&num=3&q={quote(query)}"
     driver.get(url)
 

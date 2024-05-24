@@ -1,7 +1,7 @@
 from pyrogram import Client, filters, idle
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
-from search import google_search
+from search import search_in_google
 import os
 
 google = Client(
@@ -26,7 +26,7 @@ async def logs(_, message: Message):
 
 @google.on_message(filters.incoming & filters.private & filters.text)
 async def search(_, message: Message):
-    results = google_search(message.text, "en")
+    results = search_in_google(message.text, "en")
     await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
 
 

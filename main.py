@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
-from search import google_search
+from search import search_in_google
 from pyrogram import Client
 from typing import Callable
 import tracemalloc
@@ -117,7 +117,7 @@ async def google_search(request: Request):
     lang = data["lang"]
 
     try:
-        results = google_search(query, lang)
+        results = search_in_google(query, lang)
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:
