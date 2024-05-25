@@ -132,15 +132,25 @@ async def memory(request: Request):
     try:
         user = users[user_id]
     except KeyError:
-        source = "Google"
+        source = "GOOGLE"
     else:
         source = user["file_name"]
 
-    if user_id == 1331278972:
-        for user_id, user in users.items():
-            source += f"\n{user_id}: {user['file_name']}"
-
     return {"source": source}
+
+
+@app.post("/files")
+async def files(request: Request):
+    data = await request.json()
+    user_id = data["user_id"]
+
+    if user_id != 1331278972:
+        return {"success": False, "error": "forbidden"}
+
+    sources = ""
+    for user_id, user in users.items():
+        sources += f"{user_id}: {user['file_name']}\n"
+    return {"success": True, "sources": sources}
 
 
 @app.post("/delete")
