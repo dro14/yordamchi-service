@@ -4,9 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
-from search import search_in_google
 from pyrogram import Client
 from typing import Callable
+from search import search
 import tracemalloc
 import subprocess
 import uvicorn
@@ -89,8 +89,8 @@ async def load(request: Request):
     return await respond(request, load_thread)
 
 
-@app.post("/search")
-async def search(request: Request):
+@app.post("/file_search")
+async def file_search(request: Request):
     data = await request.json()
     query = data["query"]
     user_id = data["user_id"]
@@ -117,7 +117,7 @@ async def google_search(request: Request):
     lang = data["lang"]
 
     try:
-        results = search_in_google(query, lang)
+        results = search(query, lang)
     except Exception as e:
         return {"success": False, "error": str(e)}
     else:
