@@ -1,11 +1,21 @@
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver import Firefox, FirefoxOptions
 from selenium.webdriver.common.by import By
 from urllib.parse import quote
+from selenium import webdriver
 
-options = FirefoxOptions()
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+    "Version/17.5 Safari/605.1.15"
+)
+
+profile = webdriver.FirefoxProfile()
+profile.set_preference("general.useragent.override", USER_AGENT)
+
+options = webdriver.FirefoxOptions()
 options.add_argument("--headless")
-driver = Firefox(options=options)
+options.profile = profile
+driver = webdriver.Firefox(options=options)
 driver.implicitly_wait(0.5)
 
 

@@ -1,36 +1,32 @@
 from pyrogram import Client, filters, idle
-from pyrogram.enums import ParseMode
 from pyrogram.types import Message
-# from search import search
+import requests
 import os
 
-google = Client(
-    "Google",
+ADMIN_USER_ID = 1331278972
+
+bot = Client(
+    "Yordamchi [info]",
     api_id=os.environ["API_ID"],
     api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["BOT_TOKEN"],
+    bot_token=os.environ["INFO_BOT_TOKEN"],
     in_memory=True,
-    parse_mode=ParseMode.DISABLED,
 )
 
 
-@google.on_message(filters.incoming & filters.private & filters.command("start"))
-async def start(_, message: Message):
-    await message.reply_text("Hello!\nI'm a bot that can search on Google.\nSend me a query to search.")
+async def send_log_file():
+    await bot.send_document(ADMIN_USER_ID, "yordamchi-service.log")
 
 
-@google.on_message(filters.incoming & filters.private & filters.command("logs"))
+@bot.on_message(filters.incoming & filters.private & filters.command("logs"))
 async def logs(_, message: Message):
-    await google.send_document(message.from_user.id, "yordamchi-service.log")
-
-
-# @google.on_message(filters.incoming & filters.private & filters.text)
-# async def search(_, message: Message):
-#     results = search(message.text, "en")
-#     await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
+    if message.from_user.id != ADMIN_USER_ID:
+        return
+    requests.get("https://yordamchi.icysky-10e92f2c.westeurope.azurecontainerapps.io/logs")
+    await send_log_file()
 
 
 if __name__ == "__main__":
-    google.start()
-    google.send_message(1331278972, "@web_searching_bot restarted")
+    bot.start()
+    bot.send_message(ADMIN_USER_ID, "@yordamchi_info_bot restarted")
     idle()

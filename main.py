@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
+from bot import send_log_file
 from pyrogram import Client
 from typing import Callable
 from search import search
@@ -20,7 +21,7 @@ sys.stdout = log_file
 sys.stderr = log_file
 ltx = LatexNodes2Text()
 
-yordamchi = Client(
+bot = Client(
     "Yordamchi",
     api_id=os.environ["API_ID"],
     api_hash=os.environ["API_HASH"],
@@ -31,10 +32,10 @@ yordamchi = Client(
 
 @asynccontextmanager
 async def lifespan(_):
-    await yordamchi.start()
+    await bot.start()
     google = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
     yield
-    await yordamchi.stop()
+    await bot.stop()
     google.terminate()
 
 
@@ -48,7 +49,7 @@ def load_thread(data: dict, response: dict, done: Event) -> None:
     file_id = data["file_id"]
     file_name = data["file_name"].replace(" ", "_")
     user_id = data["user_id"]
-    yordamchi.download_media(file_id, file_name)
+    bot.download_media(file_id, file_name)
 
     try:
         docs = load_document(file_name, user_id)
@@ -166,21 +167,12 @@ async def delete(request: Request):
         return {"success": True}
 
 
-@app.post("/logs")
-async def logs(request: Request):
-    data = await request.json()
-    user_id = data["user_id"]
-
-    if user_id != 1331278972:
-        return {"success": False, "error": "forbidden"}
-
-    completed_process = subprocess.run(["python", "yordamchi.py"], stdout=log_file, stderr=log_file)
-    if completed_process.stderr:
-        return {"success": False, "error": completed_process.stderr.decode()}
-    elif completed_process.stdout:
-        return {"success": False, "error": completed_process.stdout.decode()}
-    elif completed_process.returncode:
-        return {"success": False, "error": f"unknown error: return code {completed_process.returncode}"}
+@app.get("/logs")
+async def logs():
+    try:
+        await send_log_file()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
     else:
         return {"success": True}
 
