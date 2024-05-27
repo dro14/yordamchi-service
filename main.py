@@ -1,10 +1,8 @@
-from pylatexenc.latex2text import LatexNodes2Text
 from vectordb import retriever, users, clear
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
-from bot import send_log_file
 from pyrogram import Client
 from typing import Callable
 from search import search
@@ -19,7 +17,6 @@ tracemalloc.start()
 log_file = open("yordamchi-service.log", "w")
 sys.stdout = log_file
 sys.stderr = log_file
-ltx = LatexNodes2Text()
 
 bot = Client(
     "Yordamchi",
@@ -140,20 +137,6 @@ async def memory(request: Request):
     return {"source": source}
 
 
-@app.post("/files")
-async def files(request: Request):
-    data = await request.json()
-    user_id = data["user_id"]
-
-    if user_id != 1331278972:
-        return {"success": False, "error": "forbidden"}
-
-    sources = ""
-    for user_id, user in users.items():
-        sources += f"{user_id}: {user['file_name']}\n"
-    return {"success": True, "files": sources}
-
-
 @app.post("/delete")
 async def delete(request: Request):
     data = await request.json()
@@ -167,22 +150,18 @@ async def delete(request: Request):
         return {"success": True}
 
 
-@app.get("/logs")
-async def logs():
-    try:
-        await send_log_file()
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-    else:
-        return {"success": True}
-
-
-@app.post("/latex2text")
-async def latex2text(request: Request):
+@app.post("/files")
+async def files(request: Request):
     data = await request.json()
-    latex = data["latex"]
-    text = ltx.latex_to_text(latex)
-    return {"text": text}
+    user_id = data["user_id"]
+
+    if user_id != 1331278972:
+        return {"success": False, "error": "forbidden"}
+
+    sources = ""
+    for user_id, user in users.items():
+        sources += f"{user_id}: {user['file_name']}\n"
+    return {"success": True, "files": sources}
 
 
 if __name__ == "__main__":
