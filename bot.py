@@ -1,7 +1,7 @@
 from pyrogram import Client, filters, idle
 from pyrogram.enums import ParseMode
 from pyrogram.types import Message
-from search import search
+# from search import search
 import os
 
 google = Client(
@@ -24,10 +24,10 @@ async def logs(_, message: Message):
     await google.send_document(message.from_user.id, "yordamchi-service.log")
 
 
-@google.on_message(filters.incoming & filters.private & filters.text)
-async def search(_, message: Message):
-    results = search(message.text, "en")
-    await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
+# @google.on_message(filters.incoming & filters.private & filters.text)
+# async def search(_, message: Message):
+#     results = search(message.text, "en")
+#     await message.reply_text("\n\n".join(results)[:4096], disable_web_page_preview=True)
 
 
 if __name__ == "__main__":
