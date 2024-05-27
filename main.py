@@ -151,7 +151,7 @@ async def files(request: Request):
     sources = ""
     for user_id, user in users.items():
         sources += f"{user_id}: {user['file_name']}\n"
-    return {"success": True, "sources": sources}
+    return {"success": True, "files": sources}
 
 
 @app.post("/delete")
