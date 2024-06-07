@@ -18,7 +18,7 @@ bot = Client(
 async def logs(_, message: Message):
     if message.from_user.id != ADMIN_USER_ID:
         return
-    requests.get("https://yordamchi.icysky-10e92f2c.westeurope.azurecontainerapps.io/logs")
+    requests.get("https://yordamchi.greensmoke-1e04616b.westeurope.azurecontainerapps.io/logs")
     await bot.send_document(ADMIN_USER_ID, "yordamchi-service.log")
 
 
