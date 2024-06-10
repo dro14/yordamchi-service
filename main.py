@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from threading import Thread, Event
 from loaders import load_document
-from bot import ADMIN_USER_ID
 from pyrogram import Client
 from typing import Callable
 from search import search
@@ -152,16 +151,10 @@ async def delete(request: Request):
 
 
 @app.post("/files")
-async def files(request: Request):
-    data = await request.json()
-    user_id = data["user_id"]
-
-    if user_id != ADMIN_USER_ID:
-        return {"success": False, "error": "forbidden"}
-
+async def files():
     sources = ""
     for user_id, user in users.items():
-        sources += f"{user_id}:\t{user['file_name']}\n"
+        sources += f"{user_id}:\t*{user['file_name']}*\n"
     return {"success": True, "files": sources}
 
 
