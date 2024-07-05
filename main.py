@@ -1,3 +1,4 @@
+from pylatexenc.latex2text import LatexNodes2Text
 from vectordb import retriever, users, clear
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -26,14 +27,18 @@ bot = Client(
     in_memory=True,
 )
 
+ltx2txt = LatexNodes2Text(
+    strict_latex_spaces="based-on-source",
+)
+
 
 @asynccontextmanager
 async def lifespan(_):
     await bot.start()
-    google = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
+    info_bot = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
     yield
     await bot.stop()
-    google.terminate()
+    info_bot.terminate()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -156,6 +161,16 @@ async def files():
     for user_id, user in users.items():
         sources += f"{user_id}:\t*{user['file_name']}*\n"
     return {"success": True, "files": sources}
+
+
+@app.post("/latex2text")
+async def latex2text(request: Request):
+    data = await request.json()
+    latex = data["latex"]
+    text = []
+    for ltx in latex:
+        text.append(ltx2txt.latex_to_text(ltx))
+    return {"text": text}
 
 
 if __name__ == "__main__":
