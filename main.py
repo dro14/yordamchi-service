@@ -29,6 +29,7 @@ bot = Client(
 
 ltx2txt = LatexNodes2Text(
     strict_latex_spaces="based-on-source",
+    keep_braced_groups=True,
 )
 
 
