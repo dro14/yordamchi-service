@@ -70,4 +70,7 @@ def search(query: str, lang: str) -> str:
             results.pop(i)
         else:
             i += 1
-    return json.dumps(results, ensure_ascii=False)
+
+    results = json.dumps(results, ensure_ascii=False)
+    print(f"QUERY: {query}, RESULTS: {results}")
+    return results
