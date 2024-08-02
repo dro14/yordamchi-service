@@ -94,4 +94,10 @@ def search(query: str, lang: str) -> str:
                 results[i].pop("url")
             i += 1
 
-    return json.dumps(results, ensure_ascii=False, indent=4)
+    response = ""
+    for result in results:
+        for key in result:
+            response += f"{key}: {result[key]}\n"
+        response += "\n"
+    return response
+
