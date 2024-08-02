@@ -36,7 +36,7 @@ bot = Client(
 @asynccontextmanager
 async def lifespan(_):
     await bot.start()
-    info_bot = subprocess.Popen(["python", "bot.py"])
+    info_bot = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
     yield
     await bot.stop()
     info_bot.terminate()

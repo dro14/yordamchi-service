@@ -71,6 +71,4 @@ def search(query: str, lang: str) -> str:
         else:
             i += 1
 
-    results = json.dumps(results, ensure_ascii=False, indent=4)
-    print(f"QUERY: {query}, RESULTS:\n{results}")
-    return results
+    return json.dumps(results, ensure_ascii=False, indent=4)
