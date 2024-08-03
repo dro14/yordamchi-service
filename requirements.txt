@@ -1,7 +1,11 @@
+beautifulsoup4
 fastapi
+networkx
+nltk
 pylatexenc
 Pyrogram
 requests
+scikit-learn
 selenium
 TgCrypto
 uvicorn

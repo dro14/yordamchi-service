@@ -1,6 +1,15 @@
 from selenium.common.exceptions import NoSuchElementException
+from summarize import summarize
 from selenium import webdriver
 from urllib.parse import quote
+
+domains = [
+    "wikipedia.org",
+    "kun.uz",
+    "daryo.uz",
+    "spot.uz",
+    "qalampir.uz",
+]
 
 classes = {
     "V3FYCf": ["hgKElc", "featured_snippet"],
@@ -20,7 +29,7 @@ options = webdriver.FirefoxOptions()
 options.add_argument("--headless")
 options.profile = profile
 driver = webdriver.Firefox(options=options)
-driver.implicitly_wait(0.5)
+driver.implicitly_wait(1.0)
 
 
 def get_title(element) -> str:
@@ -51,7 +60,7 @@ def get_url(element) -> str:
 
 
 def search(query: str, lang: str) -> str:
-    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=3&q={quote(query)}"
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
     driver.get(url)
 
     try:
@@ -97,6 +106,8 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
+            if any(domain in results[i]["url"] for domain in domains):
+                return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
             if not results[i]["url"]:
