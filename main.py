@@ -1,18 +1,22 @@
 from pylatexenc.latex2text import LatexNodes2Text
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-from pyrogram import Client
 from search import search
 import tracemalloc
 import subprocess
 import uvicorn
 import sys
-import os
 
 tracemalloc.start()
 log_file = open("yordamchi-service.log", "w")
 sys.stdout = log_file
 sys.stderr = log_file
+
+subprocess.Popen(
+    ["python", "bot.py"],
+    stdout=log_file,
+    stderr=log_file,
+)
 
 ltx2txt = LatexNodes2Text(
     strict_latex_spaces={
@@ -24,25 +28,7 @@ ltx2txt = LatexNodes2Text(
     keep_braced_groups=True,
 )
 
-bot = Client(
-    "Yordamchi",
-    api_id=os.environ["API_ID"],
-    api_hash=os.environ["API_HASH"],
-    bot_token=os.environ["MAIN_BOT_TOKEN"],
-    in_memory=True,
-)
-
-
-@asynccontextmanager
-async def lifespan(_):
-    await bot.start()
-    info_bot = subprocess.Popen(["python", "bot.py"], stdout=log_file, stderr=log_file)
-    yield
-    await bot.stop()
-    info_bot.terminate()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.get("/")
