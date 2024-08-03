@@ -1,4 +1,5 @@
 from selenium.common.exceptions import NoSuchElementException
+from fake_useragent import UserAgent
 from summarize import summarize
 from selenium import webdriver
 from urllib.parse import quote
@@ -16,20 +17,14 @@ classes = {
     "xGj8Mb": ["kno-rdesc", "description"],
 }
 
-user_agent = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-    "Version/17.5 Safari/605.1.15"
-)
-
 profile = webdriver.FirefoxProfile()
-profile.set_preference("general.useragent.override", user_agent)
+profile.set_preference("general.useragent.override", UserAgent().random)
 
 options = webdriver.FirefoxOptions()
 options.add_argument("--headless")
 options.profile = profile
 driver = webdriver.Firefox(options=options)
-driver.implicitly_wait(1.0)
+driver.implicitly_wait(0.5)
 
 
 def get_title(element) -> str:
