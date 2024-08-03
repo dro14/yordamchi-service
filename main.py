@@ -1,5 +1,4 @@
 from pylatexenc.latex2text import LatexNodes2Text
-from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from search import search
 import tracemalloc
