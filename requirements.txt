@@ -7,6 +7,5 @@ pylatexenc
 Pyrogram
 requests
 scikit-learn
-selenium
 TgCrypto
 uvicorn

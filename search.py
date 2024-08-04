@@ -1,10 +1,10 @@
-from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
 from fake_useragent import UserAgent
 from summarize import summarize
-from selenium import webdriver
 from urllib.parse import quote
+from bs4 import BeautifulSoup
+import requests
 
-domains = [
+trusted_domains = [
     "wikipedia.org",
     "kun.uz",
     "daryo.uz",
@@ -17,90 +17,50 @@ classes = {
     "xGj8Mb": ["kno-rdesc", "description"],
 }
 
-profile = webdriver.FirefoxProfile()
-profile.set_preference("general.useragent.override", UserAgent().random)
-
-options = webdriver.FirefoxOptions()
-options.add_argument("--headless")
-options.profile = profile
-driver = webdriver.Firefox(options=options)
-driver.implicitly_wait(0.5)
-
 
 def get_title(element) -> str:
-    if element:
-        try:
-            return element.find_element("css selector", "h3").text
-        except NoSuchElementException:
-            pass
-    return ""
+    return element.find("h3").text if element.find("h3") else ""
 
 
 def get_text(element, class_name) -> str:
-    if element and class_name:
-        try:
-            return element.find_element("class name", class_name).text
-        except NoSuchElementException:
-            pass
-    return ""
+    return element.find("div", class_=class_name).text if element.find("div", class_=class_name) else ""
 
 
 def get_url(element) -> str:
-    if element:
-        try:
-            return element.find_element("css selector", "a").get_attribute("href")
-        except NoSuchElementException:
-            pass
-    return ""
+    return element.find("a")["href"] if element.find("a") else ""
 
 
 def search(query: str, lang: str) -> str:
-    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
-    driver.get(url)
-    driver.save_screenshot("/app/screenshot.png")
-    with open("/app/page_source.html", "w") as file:
-        file.write(driver.page_source)
-
-    try:
-        element = driver.find_element("id", "L2AGLb")
-        driver.execute_script("arguments[0].scrollIntoView();", element)
-        element.click()
-    except NoSuchElementException:
-        pass
-    except ElementNotInteractableException:
-        pass
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=3&q={quote(query)}"
+    response = requests.get(url, headers={"User-Agent": UserAgent().random})
+    soup = BeautifulSoup(response.text, "html.parser")
 
     results = []
     for class_name in classes:
-        try:
-            element = driver.find_element("class name", class_name)
-        except NoSuchElementException:
-            continue
-        else:
+        element = soup.find("div", class_=class_name)
+        if element:
             results.append({
                 "title": get_title(element),
                 classes[class_name][1]: get_text(element, classes[class_name][0]),
                 "url": get_url(element),
             })
 
-    try:
-        first_result = driver.find_element("class name", "MjjYud")
-    except NoSuchElementException:
-        pass
-    else:
-        results.append({
-            "title": get_title(first_result),
-            "result": first_result.text,
-            "url": get_url(first_result),
-        })
-        for element in driver.find_elements("class name", "MjjYud"):
+    do_summary = True
+    element = soup.find("div", class_="MjjYud")
+    if element:
+        if not element.find("div", class_="VwiC3b"):
+            results.append({
+                "title": get_title(element),
+                "result": element.text,
+                "url": get_url(element),
+            })
+            do_summary = False
+        for element in soup.find_all("div", class_="MjjYud"):
             results.append({
                 "title": get_title(element),
                 "result": get_text(element, "VwiC3b"),
                 "url": get_url(element),
             })
-            if results[-1]["url"] == get_url(first_result):
-                results.pop()
 
     i = 0
     while i < len(results):
@@ -108,7 +68,7 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
-            if any(domain in results[i]["url"] for domain in domains):
+            if do_summary and any(domain in results[i]["url"] for domain in trusted_domains):
                 return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
