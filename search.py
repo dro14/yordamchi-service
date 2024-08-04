@@ -57,6 +57,7 @@ def get_url(element) -> str:
 def search(query: str, lang: str) -> str:
     url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
     driver.get(url)
+    driver.save_screenshot("/app/screenshot.png")
 
     try:
         element = driver.find_element("id", "L2AGLb")
@@ -65,7 +66,7 @@ def search(query: str, lang: str) -> str:
     except NoSuchElementException:
         pass
     except ElementNotVisibleException:
-        driver.save_screenshot("/app/screenshot.png")
+        pass
 
     results = []
     for class_name in classes:
@@ -105,8 +106,8 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
-            # if any(domain in results[i]["url"] for domain in domains):
-            #     return summarize(query, results[i]["url"], num_sentences=10)
+            if any(domain in results[i]["url"] for domain in domains):
+                return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
             if not results[i]["url"]:
