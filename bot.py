@@ -22,6 +22,13 @@ async def logs(_, message: Message):
     await bot.send_document(ADMIN_USER_ID, "yordamchi-service.log")
 
 
+@bot.on_message(filters.incoming & filters.private & filters.command("screenshot"))
+async def screenshot(_, message: Message):
+    if message.from_user.id != ADMIN_USER_ID:
+        return
+    await bot.send_photo(ADMIN_USER_ID, "screenshot.png")
+
+
 if __name__ == "__main__":
     bot.start()
     bot.send_message(ADMIN_USER_ID, "@yordamchi_info_bot restarted")
