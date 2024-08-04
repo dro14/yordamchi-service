@@ -3,14 +3,6 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup
 import requests
 
-trusted_domains = [
-    "wikipedia.org",
-    "kun.uz",
-    "daryo.uz",
-    "spot.uz",
-    "qalampir.uz",
-]
-
 classes = {
     "V3FYCf": ["hgKElc", "featured_snippet"],
     "xGj8Mb": ["kno-rdesc", "description"],
