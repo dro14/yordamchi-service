@@ -34,7 +34,7 @@ def get_url(element) -> str:
 
 
 def search(query: str, lang: str) -> str:
-    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
+    url = f"https://www.google.com/search?hl={lang}&gl=uz&num=3&q={quote(query)}"
     response = requests.get(url, headers={"User-Agent": UserAgent().random})
     soup = BeautifulSoup(response.text, "html.parser")
 
