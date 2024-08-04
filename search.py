@@ -19,15 +19,18 @@ classes = {
 
 
 def get_title(element) -> str:
-    return element.find("h3").text if element.find("h3") else ""
+    h3 = element.find("h3")
+    return h3.text if h3 else ""
 
 
 def get_text(element, class_name) -> str:
-    return element.find("div", class_=class_name).text if element.find("div", class_=class_name) else ""
+    div = element.find("div", class_=class_name)
+    return div.text if div else ""
 
 
 def get_url(element) -> str:
-    return element.find("a")["href"] if element.find("a") else ""
+    a = element.find("a")
+    return a["href"] if a and "href" in a else ""
 
 
 def search(query: str, lang: str) -> str:
