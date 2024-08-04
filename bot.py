@@ -22,11 +22,12 @@ async def logs(_, message: Message):
     await bot.send_document(ADMIN_USER_ID, "yordamchi-service.log")
 
 
-@bot.on_message(filters.incoming & filters.private & filters.command("screenshot"))
+@bot.on_message(filters.incoming & filters.private & filters.command("snapshot"))
 async def screenshot(_, message: Message):
     if message.from_user.id != ADMIN_USER_ID:
         return
-    await bot.send_photo(ADMIN_USER_ID, "/app/screenshot.png")
+    await bot.send_photo(ADMIN_USER_ID, "screenshot.png")
+    await bot.send_document(ADMIN_USER_ID, "page_source.html")
 
 
 if __name__ == "__main__":

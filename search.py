@@ -1,4 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException, ElementNotVisibleException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
 from fake_useragent import UserAgent
 from summarize import summarize
 from selenium import webdriver
@@ -58,6 +58,8 @@ def search(query: str, lang: str) -> str:
     url = f"https://www.google.com/search?hl={lang}&gl=uz&num=5&q={quote(query)}"
     driver.get(url)
     driver.save_screenshot("/app/screenshot.png")
+    with open("/app/page_source.html", "w") as file:
+        file.write(driver.page_source)
 
     try:
         element = driver.find_element("id", "L2AGLb")
@@ -65,7 +67,7 @@ def search(query: str, lang: str) -> str:
         element.click()
     except NoSuchElementException:
         pass
-    except ElementNotVisibleException:
+    except ElementNotInteractableException:
         pass
 
     results = []
