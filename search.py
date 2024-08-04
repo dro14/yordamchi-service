@@ -1,5 +1,4 @@
 from fake_useragent import UserAgent
-from summarize import summarize
 from urllib.parse import quote
 from bs4 import BeautifulSoup
 import requests
@@ -69,8 +68,6 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
-            # if do_summary and any(domain in results[i]["url"] for domain in trusted_domains):
-            #     return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
             if not results[i]["url"]:
