@@ -103,8 +103,8 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
-            if any(domain in results[i]["url"] for domain in domains):
-                return summarize(query, results[i]["url"], num_sentences=10)
+            # if any(domain in results[i]["url"] for domain in domains):
+            #     return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
             if not results[i]["url"]:
