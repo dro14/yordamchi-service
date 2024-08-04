@@ -48,7 +48,6 @@ def search(query: str, lang: str) -> str:
                 "url": get_url(element),
             })
 
-    do_summary = True
     element = soup.find("div", class_="MjjYud")
     if element:
         if not element.find("div", class_="VwiC3b"):
@@ -57,7 +56,6 @@ def search(query: str, lang: str) -> str:
                 "result": element.get_text(separator=" ", strip=True),
                 "url": get_url(element),
             })
-            do_summary = False
         for element in soup.find_all("div", class_="MjjYud"):
             results.append({
                 "title": get_title(element),
@@ -71,8 +69,8 @@ def search(query: str, lang: str) -> str:
                 not results[i].get("description", "") and not results[i].get("result", "")):
             results.pop(i)
         else:
-            if do_summary and any(domain in results[i]["url"] for domain in trusted_domains):
-                return summarize(query, results[i]["url"], num_sentences=10)
+            # if do_summary and any(domain in results[i]["url"] for domain in trusted_domains):
+            #     return summarize(query, results[i]["url"], num_sentences=10)
             if not results[i]["title"]:
                 results[i].pop("title")
             if not results[i]["url"]:
