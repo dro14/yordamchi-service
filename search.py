@@ -59,7 +59,9 @@ def search(query: str, lang: str) -> str:
     driver.get(url)
 
     try:
-        driver.find_element("id", "L2AGLb").click()
+        element = driver.find_element("id", "L2AGLb")
+        driver.execute_script("arguments[0].scrollIntoView();", element)
+        element.click()
     except NoSuchElementException:
         pass
 
@@ -114,5 +116,4 @@ def search(query: str, lang: str) -> str:
         for key in result:
             response += f"{key}: {result[key]}\n"
         response += "\n"
-    return response if response else driver.page_source
-
+    return response
