@@ -26,7 +26,7 @@ async def logs(_, message: Message):
 async def screenshot(_, message: Message):
     if message.from_user.id != ADMIN_USER_ID:
         return
-    await bot.send_photo(ADMIN_USER_ID, "screenshot.png")
+    await bot.send_photo(ADMIN_USER_ID, "/app/screenshot.png")
 
 
 if __name__ == "__main__":
