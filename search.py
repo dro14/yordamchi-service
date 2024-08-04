@@ -114,5 +114,5 @@ def search(query: str, lang: str) -> str:
         for key in result:
             response += f"{key}: {result[key]}\n"
         response += "\n"
-    return response
+    return response if response else driver.page_source
 
