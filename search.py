@@ -1,4 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementNotVisibleException
 from fake_useragent import UserAgent
 from summarize import summarize
 from selenium import webdriver
@@ -64,9 +64,8 @@ def search(query: str, lang: str) -> str:
         element.click()
     except NoSuchElementException:
         pass
-
-    # Take screenshot of the screen and save it to the `screenshot.png` file
-    driver.save_screenshot("/app/screenshot.png")
+    except ElementNotVisibleException:
+        driver.save_screenshot("/app/screenshot.png")
 
     results = []
     for class_name in classes:
